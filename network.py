@@ -5,7 +5,7 @@ __author__ = 'pezzati'
 import socket
 import json
 
-from Model import *
+from model import *
 
 
 class Network:

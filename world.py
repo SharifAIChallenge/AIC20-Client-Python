@@ -1,8 +1,94 @@
+from controller import GameConstants
+from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Phase
 
+#################### Soalat?
+# queue chie tuye world
+# chera inhamme argument ezafi dare world
 
 class World:
+    DEBUGGING_MODE = False
+    LOG_FILE_POINTER = None
 
-    def _init_(self):
+    def __init__(self, world=None, queue=None):
+        self.game_constants = None
+        self.map = None
+        self.base_units = None
+        self.area_spells = None
+        self.unit_spells = None
+        if world is not None:
+            self.game_constants = world.game_constants
+            self.map = world.map
+            self.base_units = world.base_units
+            self.area_spells = world.area_spells
+            self.unit_spells = world.unit_spells
+            # game_constants = world._get_game_constants()
+            # self.game_constants = game_constants
+            # self.max_ap = game_constants.max_ap
+            # self.max_turns = game_constants.max_turns
+            # self.kill_score = game_constants.kill_score
+            # self.objective_zone_score = game_constants.objective_zone_score
+            # self.max_score = game_constants.max_score
+            # self.total_move_phases = game_constants.total_move_phases
+            # self.init_overtime = game_constants.init_overtime
+            # self.hero_constants = world.hero_constants
+            # self.ability_constants = world.ability_constants
+            # self.map = world.map
+            # self.queue = world.queue
+            # self.heroes = world.heroes
+            # self.max_score_diff = world.max_score_diff
+        else:
+            self.queue = queue ######################in chieeeeee?!!!!!!!!!!!!!!!!!#############
+
+
+    def _game_constant_init(self, game_constants_msg):
+        self.game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
+                                            max_turns=game_constants_msg["maxTurns"],
+                                            turn_timeout=game_constants_msg["turnTimeout"],
+                                            pick_timeout=game_constants_msg["pickTimeout"],
+                                            turns_to_upgrade=game_constants_msg["turnsToUpgrade"],
+                                            turns_to_spell=game_constants_msg["turnsToSpell"],
+                                            damage_upgrade_addition=game_constants_msg["damageUpgradeAddition"],
+                                            range_upgrade_addition=game_constants_msg["rangeUpgradeAddition"])
+
+    def _map_init(self, map_msg):
+        row_num = map_msg["rows"]
+        col_num = map_msg["cols"]
+        paths = [Path(path["id"], [Cell(cell["row"], cell["column"]) for cell in path["cells"]]
+                      ) for path in map_msg["paths"]]
+        kings = [King(player_id=king["playerId"], is_you=king["isYou"], is_your_friend=king["isYourFriend"],
+                      center=Cell(king["row"], king["col"]), hp=king["hp"],
+                      attack=king["attack"], range=king["range"]) for king in map_msg["kings"]]
+        self.map = Map(row_count=row_num, column_count=col_num, paths=paths, kings=kings)
+
+    def _base_unit_init(self, msg):
+        self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"], base_attack=b_unit["baseAttack"],
+                                    base_range=b_unit["baseRange"], target=b_unit["target"], is_flying=b_unit["isFlying"],
+                                    is_multiple=b_unit["isMultiple"])
+                           for b_unit in msg]
+
+    def _spells_init(self, msg):
+        self.area_spells = []
+        self.unit_spells = []
+        for spell in msg:
+            if msg["isAreaSpell"]:
+                self.area_spells.append(AreaSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"],
+                                                  range=spell["range"], power=spell["power"], is_damaging=spell["isDamaging"]))
+            else:
+                self.unit_spells.append(UnitSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"]))
+
+    def _handle_init_message(self, msg):
+        # if World.DEBUGGING_MODE:
+        #     if World.LOG_FILE_POINTER is not None:
+        #         World.LOG_FILE_POINTER.write(str(msg))
+        #         World.LOG_FILE_POINTER.write('\n')
+        msg = msg['args'][0]
+        self._game_constant_init(msg['gameConstants'])
+        self._map_init(msg["map"])
+        self._base_unit_init(msg["baseUnits"])
+        self._spells_init(msg["spells"])
+
+    def _handle_pick_message(self, msg):
+
         pass
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
@@ -146,3 +232,4 @@ class World:
     # returns the health point remaining for each player
     def get_player_hp(self):
         pass
+
