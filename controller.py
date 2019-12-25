@@ -1,4 +1,4 @@
-from model import ServerConstants, Path, Cell, King, Map, BaseUnit, AreaSpell, UnitSpell
+from model import ServerConstants, Path, Cell, King, Map, BaseUnit, AreaSpell, UnitSpell, Event
 from model import Phase
 import threading
 
