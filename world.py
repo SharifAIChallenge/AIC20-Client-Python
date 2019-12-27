@@ -139,7 +139,7 @@ class World(ABC):
     def _handle_turn_kings(self, msg):
         for king_msg in msg:
             hp = king_msg["hp"] if king_msg["hp"] >= 0 else -1
-            self.players_by_id[king_msg["playerId"]].king.hp = hp
+            self.get_player_by_id(king_msg["playerId"]).king.hp = hp
 
     def _handle_turn_units(self, msg):
         self.map.clear_units()
@@ -181,6 +181,10 @@ class World(ABC):
                                                      affected_units=[self.get_unit_by_id(affected_unit_id) for
                                                                      affected_unit_id in
                                                                      cast_spell_msg["affectedUnits"]]))
+        self.cast_spell = dict((cast_spell_i.type_id, cast_spell_i) for cast_spell_i in cast_spell_list)
+
+    def get_cast_spell_by_type(self, type):
+        return self.cast_spell[type]
 
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
