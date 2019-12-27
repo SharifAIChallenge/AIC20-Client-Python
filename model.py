@@ -46,6 +46,12 @@ class Cell:
         self.col = 0
         self.units = []
 
+    def __eq__(self, other):
+        if not isinstance(other, Cell):
+            return NotImplemented
+
+        return self.col == other.col and self.row == other.row
+
 
 class Path:
     def __init__(self, path_id=0, cells=None):
@@ -78,6 +84,7 @@ class King:
         self.level = 0
         self.attack = attack
         self.range = range
+
 
 class AreaSpell(Spell):
     def __init__(self, type_id, turn_effect, range, power, is_damaging):
