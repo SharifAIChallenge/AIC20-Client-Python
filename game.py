@@ -7,6 +7,7 @@ class Game(World):
         pass
 
     def get_my_id(self):
+
         pass
 
     def get_friend_id(self):

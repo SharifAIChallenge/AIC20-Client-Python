@@ -1,7 +1,9 @@
+from abc import ABC
+
 from controller import GameConstants
 from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path
 
-from abc import ABC, abstractmethod
+
 #################### Soalat?
 # queue chie tuye world
 # chera inhamme argument ezafi dare world
@@ -17,6 +19,11 @@ class World(ABC):
         self.area_spells = None
         self.unit_spells = None
         self.current_turn = 0
+
+        self.player = None
+        self.player_friend = None
+        self.player_first_enemy = None
+        self.player_second_enemy = None
         if world is not None:
             self.game_constants = world.game_constants
             self.map = world.map
