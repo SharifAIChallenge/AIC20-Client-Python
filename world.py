@@ -1,4 +1,5 @@
 from abc import ABC
+import time
 
 from controller import GameConstants
 from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player
@@ -19,6 +20,8 @@ class World(ABC):
         self.area_spells = None
         self.unit_spells = None
         self.current_turn = 0
+        self.received_spell = 0
+        self.friend_received_spell = 0
 
         self.players = []
         self.player = None
@@ -33,6 +36,8 @@ class World(ABC):
             self.area_spells = world.area_spells
             self.unit_spells = world.unit_spells
             self.current_turn = world.current_turn
+            self.received_spell = world.received_spell
+            self.friend_received_spell = world.friend_received_spell
 
             self.players = world.players
             self.player = world.player
@@ -57,13 +62,19 @@ class World(ABC):
         else:
             self.queue = queue  ######################in chieeeeee?!!!!!!!!!!!!!!!!!#############
 
-    def _get_player_by_id(self, player_id):
+    def get_current_time_millis(self):
+        return int(round(time.time() * 1000))
+
+    def get_time_passed(self):
+        return self.get_current_time_millis() - self.start_time
+
+    def get_player_by_id(self, player_id):
         for player in self.players:
             if player.player_id == player_id:
                 return player
         return None
 
-    def _get_spell_by_type_id(self, type_id):
+    def get_spell_by_type_id(self, type_id):
         for spell in self.area_spells:
             if spell.type == type_id:
                 return spell
@@ -106,8 +117,6 @@ class World(ABC):
                            for b_unit in msg])
 
     def _spells_init(self, msg):
-        area_spells = []
-        unit_spells = []
         for spell in msg:
             if msg["isAreaSpell"]:
                 self.area_spells.append(AreaSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"],
@@ -115,7 +124,7 @@ class World(ABC):
                                                   is_damaging=spell["isDamaging"]))
             else:
                 self.unit_spells.append(UnitSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"]))
-        self.area_spells = dict()
+
     def _handle_init_message(self, msg):
         # if World.DEBUGGING_MODE:
         #     if World.LOG_FILE_POINTER is not None:
@@ -146,7 +155,12 @@ class World(ABC):
         self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
 
-        pass
+        type_received = int(msg["receivedSpell"])
+        if (type_received != -1):
+            self.received_spell = self.get_spell_by_type_id(type_received)
+            self.friend_received_spell = self.get_spell_by_type_id(type_received)
+
+        self.start_time = self.get_current_time_millis()
 
         # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
 
