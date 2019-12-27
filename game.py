@@ -1,5 +1,5 @@
 from world import World
-from model import Event, Unit
+from model import Event, Unit, GameConstants, CastUnitSpell, CastAreaSpell
 
 
 class Game(World):
@@ -186,12 +186,13 @@ class Game(World):
 
     # returns area spells that are casted in last turn and returns other players spells also
     def get_cast_area_spell(self, player_id):
-        pass
+        return [cast_spell_i for cast_spell_i in self.cast_spell.values()
+                if cast_spell_i.caster_id and isinstance(cast_spell_i, CastAreaSpell)]
 
     # returns unit spells that are casted in last turn and returns other players spells also
     def get_cast_unit_spell(self, player_id):
-        self.cast_spell
-        pass
+        return [cast_spell_i for cast_spell_i in self.cast_spell.values()
+                if cast_spell_i.caster_id and isinstance(cast_spell_i, CastUnitSpell)]
 
     def get_active_poisons_on_unit(self, unit_id=None, unit=None):
         temp_unit = unit
