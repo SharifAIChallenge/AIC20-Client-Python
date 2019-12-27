@@ -12,6 +12,7 @@ class World(ABC):
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
     players = list()
+    players_by_id = dict()
 
     def __init__(self, world=None, queue=None):
         self.game_constants = None
@@ -68,11 +69,12 @@ class World(ABC):
         kings = [King(center=Cell(king["row"], king["col"]), hp=king["hp"],
                       attack=king["attack"], range=king["range"])
                  for king in map_msg["kings"]]
-        players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
-        self.player = players[0]
-        self.player_friend = players[1]
-        self.player_first_enemy = players[2]
-        self.player_second_enemy = players[3]
+        self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
+        self.players_by_id = dict([(player.player_id, player) for player in self.players])
+        self.player = self.players[0]
+        self.player_friend = self.players[1]
+        self.player_first_enemy = self.players[2]
+        self.player_second_enemy = self.players[3]
         self.map = Map(row_count=row_num, column_count=col_num, paths=paths, kings=kings)
 
     def _base_unit_init(self, msg):
@@ -108,7 +110,6 @@ class World(ABC):
         self.current_turn = msg['currTurn']
         self.player.deck = [self.base_units[deck["typeId"]] for deck in msg["deck"]]
         self.player.hand = [self.base_units[hand["typeId"]] for hand in msg["hand"]]
-
 
         pass
 
