@@ -52,25 +52,9 @@ class World(ABC):
             self.player_friend = world.player_friend
             self.player_first_enemy = world.player_first_enemy
             self.player_second_enemy = world.player_second_enemy
-
             self.cast_spell = world.cast_spell
-            # game_constants = world._get_game_constants()
-            # self.game_constants = game_constants
-            # self.max_ap = game_constants.max_ap
-            # self.max_turns = game_constants.max_turns
-            # self.kill_score = game_constants.kill_score
-            # self.objective_zone_score = game_constants.objective_zone_score
-            # self.max_score = game_constants.max_score
-            # self.total_move_phases = game_constants.total_move_phases
-            # self.init_overtime = game_constants.init_overtime
-            # self.hero_constants = world.hero_constants
-            # self.ability_constants = world.ability_constants
-            # self.map = world.map
-            # self.queue = world.queue
-            # self.heroes = world.heroes
-            # self.max_score_diff = world.max_score_diff
         else:
-            self.queue = queue  ######################in chieeeeee?!!!!!!!!!!!!!!!!!#############
+            self.queue = queue
 
     def get_current_time_millis(self):
         return int(round(time.time() * 1000))
@@ -177,7 +161,8 @@ class World(ABC):
                         is_clone=unit_msg("isClone"),
                         active_poisons=unit_msg["activePoisons"],
                         range=unit_msg("range"),
-                        attack=unit_msg("attack"))
+                        attack=unit_msg("attack"),
+                        was_played_this_turn=unit_msg("wasPlayedThisTurn"))
             self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
             player.units.append(unit)
 

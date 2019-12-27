@@ -42,7 +42,7 @@ class Player:
 
 class Unit:
     def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, is_clone, damage_level,
-                 range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons):
+                 range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons, was_played_this_turn):
         self.unit_id = unit_id
         self.base_unit = base_unit
         self.cell = cell
@@ -57,6 +57,7 @@ class Unit:
         self.range = range
         self.attack = attack
         self.active_poisons = active_poisons
+        self.was_played_this_turn = was_played_this_turn
 
 class Spell:
     def __init__(self, type_id, turn_effect):
@@ -81,6 +82,7 @@ class Cell:
 
     def add_unit(self, unit):
         self.units.append(unit)
+
 
 class Path:
     def __init__(self, path_id=0, cells=None):

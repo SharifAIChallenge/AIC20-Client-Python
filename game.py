@@ -220,4 +220,4 @@ class Game(World):
         pass
 
     def get_player_played_units(self, player_id):
-        pass
+        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.was_played_this_turn]
