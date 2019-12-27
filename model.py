@@ -13,6 +13,20 @@ class Map:
     def get_cell(self, row, column):
         return self._cells[row][column]
 
+    def clear_units(self):
+        for row in self._cells:
+            for cell in row:
+                cell.clear_units()
+
+    def get_path_by_id(self, path_id):
+        for path in self.paths:
+            if path.path_id == path_id:
+                return path
+        return None
+
+    def add_unit_in_cell(self, row, column, unit):
+        self._cells[row][column].add_unit(unit)
+
 class Player:
     def __init__(self, player_id, king):
         self.player_id = player_id
@@ -22,17 +36,26 @@ class Player:
         self.ap = 0
         self.upgrade_tokens = 0
         self.king = king
+        self.units = []
 
 
 class Unit:
-    def __init__(self):
-        self.unit_id = 0
-        self.base_unit = None
-        self.cell = None
-        self.path = None
-        self.hp = 0
-        self.is_hasted = False
-
+    def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, is_clone, damage_level,
+                 range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons):
+        self.unit_id = unit_id
+        self.base_unit = base_unit
+        self.cell = cell
+        self.path = path
+        self.hp = hp
+        self.is_hasted = is_hasted
+        self.is_clone = is_clone
+        self.damage_level = damage_level
+        self.range_level = range_level
+        self.was_damage_upgraded = was_damage_upgraded
+        self.was_range_upgraded = was_range_upgraded
+        self.range = range
+        self.attack = attack
+        self.active_poisons = active_poisons
 
 class Spell:
     def __init__(self, type_id, turn_effect):
@@ -42,8 +65,8 @@ class Spell:
 
 class Cell:
     def __init__(self, row=0, col=0):
-        self.row = 0
-        self.col = 0
+        self.row = row
+        self.col = col
         self.units = []
 
     def __eq__(self, other):
@@ -52,6 +75,11 @@ class Cell:
 
         return self.col == other.col and self.row == other.row
 
+    def clear_units(self):
+        self.units.clear()
+
+    def add_unit(self, unit):
+        self.units.append(unit)
 
 class Path:
     def __init__(self, path_id=0, cells=None):

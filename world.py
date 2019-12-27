@@ -2,7 +2,7 @@ from abc import ABC
 import time
 
 from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell
+    CastAreaSpell, CastUnitSpell, Unit
 
 
 #################### Soalat?
@@ -113,7 +113,6 @@ class World(ABC):
                       attack=king["attack"], range=king["range"])
                  for king in map_msg["kings"]]
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
-        self.players_by_id = dict([(player.player_id, player) for player in self.players])
         self.player = self.players[0]
         self.player_friend = self.players[1]
         self.player_first_enemy = self.players[2]
@@ -159,8 +158,28 @@ class World(ABC):
             self.players_by_id[king_msg["playerId"]].king.hp = hp
 
     def _handle_turn_units(self, msg):
-
-        pass
+        self.map.clear_units()
+        for player in self.players:
+            player.units.clear()
+        for unit_msg in msg:
+            unit_id = unit_msg["unitId"]
+            player = self.get_player_by_id(player_id=unit_msg["playerId"])
+            base_unit = self.base_units[unit_msg["typeId"]]
+            unit = Unit(unit_id=unit_id, base_unit=base_unit,
+                        cell=self.map.get_cell(unit_msg["cell"]["row"], unit_msg["cell"]["col"]),
+                        path=self.map.get_path_by_id(unit_msg["pathId"]),
+                        hp=unit_msg["hp"],
+                        damage_level=unit_msg["damageLevel"],
+                        range_level=unit_msg["rangeLevel"],
+                        was_damage_upgraded=unit_msg["wasDamageUpgraded"],
+                        was_range_upgraded=unit_msg["wasRangeUpgraded"],
+                        is_hasted=unit_msg("isHasted"),
+                        is_clone=unit_msg("isClone"),
+                        active_poisons=unit_msg["activePoisons"],
+                        range=unit_msg("range"),
+                        attack=unit_msg("attack"))
+            self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
+            player.units.append(unit)
 
     def _handle_turn_cast_spells(self, msg):
         cast_spell_list = []
@@ -276,6 +295,7 @@ class World(ABC):
         # place unit with type_id in path_id
 
     def put_unit(self, type_id, path_id):
+
         pass
 
         # return the number of turns passed
