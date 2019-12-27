@@ -1,5 +1,5 @@
-from model import Event
 from world import World
+from model import Event, Unit
 
 
 class Game(World):
@@ -190,51 +190,73 @@ class Game(World):
 
     # returns unit spells that are casted in last turn and returns other players spells also
     def get_cast_unit_spell(self, player_id):
+        self.cast_spell
         pass
 
     def get_active_poisons_on_unit(self, unit_id=None, unit=None):
-        pass
+        temp_unit = unit
+        if unit_id is not None:
+            temp_unit = self.get_unit_by_id(unit_id)
+        if isinstance(temp_unit, Unit):
+            return temp_unit.active_poisons
+        return None
 
     # returns a list of spells casted on a cell
     def get_range_upgrade_number(self, player_id):
-        pass
+        return self.turn_updates.available_range_upgrade
 
     def get_damage_upgrade_number(self, player_id):
-        pass
-
-    # returns the token of the upgrade you can do
-    def get_upgrade_token_number(self):
-        pass
+        return self.turn_updates.available_damage_upgrade
 
     def get_spells_list(self):
-        pass
+        return self.player.spells
 
-    # get current available spells
+    # get current available spells as a dictionary
     def get_spells(self):
-        pass
+        return_dict = dict()
+        for spell in self.player.spells:
+            if spell in return_dict:
+                return_dict[spell] += 1
+            else:
+                return_dict[spell] = 1
+        return return_dict
 
     # returns the spell given in that turn
     def get_received_spell(self):
-        pass
+        spell_type_id = self.turn_updates.received_spell
+        if spell_type_id == -1:
+            return None
+        else:
+            return self.get_spell_by_type_id(spell_type_id)
 
     # returns the spell given in that turn to friend
     def get_friend_received_spell(self):
-        pass
+        spell_type_id = self.turn_updates.friend_received_spell
+        if spell_type_id == -1:
+            return None
+        else:
+            return self.get_spell_by_type_id(spell_type_id)
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
-        pass
+        if unit != None:
+            self.queue.put(Event("rangeUpgrade", [unit.unit_id]))
+        elif unit_id != None:
+            self.queue.put(Event("rangeUpgrade", unit_id))
 
     def upgrade_unit_damage(self, unit=None, unit_id=None):
-        pass
+        if unit != None:
+            self.queue.put(Event("damageUpgrade", [unit.unit_id]))
+        elif unit_id != None:
+            self.queue.put(Event("damageUpgrade", unit_id))
 
     def get_player_clone_units(self, player_id):
-        pass
+        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_clone > 0]
 
     def get_player_hasted_units(self, player_id):
-        pass
+        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_hasted > 0]
 
     def get_player_poisoned_units(self, player_id):
-        pass
+        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.active_poisons > 0]
 
     def get_player_played_units(self, player_id):
         return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.was_played_this_turn]
