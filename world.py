@@ -1,13 +1,13 @@
 from abc import ABC
 import time
 
-from controller import GameConstants
-from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player
+from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates
 
 
 #################### Soalat?
 # queue chie tuye world
 # chera inhamme argument ezafi dare world
+
 
 class World(ABC):
     DEBUGGING_MODE = False
@@ -15,13 +15,14 @@ class World(ABC):
 
     def __init__(self, world=None, queue=None):
         self.game_constants = None
+
+        self.turn_updates = None
+
         self.map = None
         self.base_units = None
         self.area_spells = None
         self.unit_spells = None
         self.current_turn = 0
-        self.received_spell = 0
-        self.friend_received_spell = 0
 
         self.players = []
         self.player = None
@@ -31,6 +32,9 @@ class World(ABC):
 
         if world is not None:
             self.game_constants = world.game_constants
+
+            self.turn_updates = TurnUpdates(turn_updates=world.turn_updates)
+
             self.map = world.map
             self.base_units = world.base_units
             self.area_spells = world.area_spells
@@ -155,15 +159,17 @@ class World(ABC):
         self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
 
-        type_received = int(msg["receivedSpell"])
-        if (type_received != -1):
-            self.received_spell = self.get_spell_by_type_id(type_received)
-            self.friend_received_spell = self.get_spell_by_type_id(type_received)
+        self.turn_updates = TurnUpdates(received_spell=msg["receivedSpell"], friend_received_spell=msg["friendReceivedSpell"],
+                                        got_range_upgrade=msg["gotRangeUpgrade"], got_damage_upgrade=msg["gotDamageUpgrade"],
+                                        available_range_upgrades=msg["availableRangeUpgrades"],
+                                        available_damage_upgrades=msg["availableDamageUpgrades"])
+
+        self.player.spells = msg["mySpells"]
+        self.player_friend.spells = msg["friendSpells"]
 
         self.start_time = self.get_current_time_millis()
 
-        # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-
+    # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_deck(self, type_ids):
         pass
 

@@ -10,23 +10,6 @@ from network import Network
 from world import World
 
 
-class GameConstants:
-    def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
-                 turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition):
-        self.max_ap = max_ap
-        self.max_turns = max_turns
-        self.turn_timeout = turn_timeout
-        self.pick_timeout = pick_timeout
-        self.turns_to_upgrade = turns_to_upgrade
-        self.turns_to_spell = turns_to_spell
-        self.damage_upgrade_addition = damage_upgrade_addition
-        self.range_upgrade_addition = range_upgrade_addition
-        if World.DEBUGGING_MODE:
-            import datetime
-            World.LOG_FILE_POINTER = open('client' + '-' +
-                                          datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S.%f") + '.log', 'w+')
-
-
 class Controller:
     def __init__(self):
         self.sending_flag = True
