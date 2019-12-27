@@ -4,7 +4,7 @@ from queue import Queue
 from threading import Thread
 
 from AI import AI
-from model import Phase, Event
+from model import Event
 from model import ServerConstants
 from network import Network
 from world import World
