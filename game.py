@@ -1,3 +1,4 @@
+from model import Event
 from world import World
 
 
@@ -101,7 +102,6 @@ class Game(World):
             return None
         return shortest_path_to_cell[cell.row][cell.col]
 
-
     # returns the limit of ap for each player
     def get_max_ap(self):
         return self.game_constants.max_ap
@@ -120,7 +120,8 @@ class Game(World):
 
     # place unit with type_id in path_id
     def put_unit(self, type_id, path_id):
-        pass
+        e = Event("putUnit", [type_id, path_id])
+        self.queue.put(e)
 
     # return the number of turns passed
     def get_current_turn(self):
@@ -149,11 +150,27 @@ class Game(World):
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit_id, path_id, index, spell=None, spell_id=None):
-        pass
+        path = None
+        for p in self.map.paths:
+            if p.path_id == path_id:
+                path = p
+                break
+        cell = path.cells[index]
+        if spell is None:
+            spell = self.get_spell_by_type_id(spell_id)
+        e = Event("castSpell", [spell.type, [cell.row, cell.col], unit_id, path_id])
+        self.queue.put(e)
 
     # cast spell in the cell 'center'
-    def cast_area_spell(self, center, row=None, col=None, spell=None, spell_id=None):
-        pass
+    def cast_area_spell(self, center=None, row=None, col=None, spell=None, spell_id=None):
+        if spell is None:
+            spell = self.get_spell_by_type_id(spell_id)
+        if row is not None and col is not None:
+            e = Event("castSpell", [spell.type, [row, col], -1, -1])
+            self.queue.put(e)
+        elif center is not None:
+            e = Event("castSpell", [spell.type, [center.row, center.col], -1, -1])
+            self.queue.put(e)
 
     # returns a list of units the spell casts effects on
     def get_area_spell_targets(self, center, row=None, col=None, spell=None, spell_id=None):
