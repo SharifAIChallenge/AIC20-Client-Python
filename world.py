@@ -97,8 +97,61 @@ class World(ABC):
     def _handle_turn_message(self, message):
         pass
 
+
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_deck(self, units):
+        pass
+
+    # put unit_id in path_id in position 'index' all spells of one kind have the same id
+    def cast_unit_spell(self, unit_id, path_id, index, spell):
+        pass
+
+    # cast spell in the cell 'center'
+    def cast_area_spell(self, center, spell, spell_id):
+        pass
+
+    # returns a list of units the spell casts effects on
+    def get_area_spell_targets(self, center, spell, spell_id):
+        pass
+
+    # every once in a while you can upgrade, this returns the remaining time for upgrade
+    def get_remaining_turns_to_upgrade(self):
+        pass
+
+    # every once in a while a spell is given this remains the remaining time to get new spell
+    def get_remaining_turns_to_get_spell(self):
+        pass
+
+    # returns area spells that are casted in last turn and returns other players spells also
+    def get_cast_area_spell(self, player_id):
+        pass
+
+    # returns unit spells that are casted in last turn and returns other players spells also
+    def get_cast_unit_spell(self, player_id):
+        pass
+
+    # returns a list of units that are deployed by 'player_id' in the "last turn"
+    def get_deployed_units(self, player_id):
+        pass
+
+    # returns a list of spells casted on a cell
+    def get_active_spells_on_cell(self, cell):
+        pass
+
+    # returns the token of the upgrade you can do
+    def get_upgrade_token_number(self):
+        pass
+
+    # get current available spells
+    def get_spellsO(self):
+        pass
+
+    # returns the spell given in that turn
+    def get_received_spell(self):
+        pass
+
+    # returns the spell given in that turn to friend
+    def get_friend_received_spell(self):
         pass
 
     def get_my_id(self):
