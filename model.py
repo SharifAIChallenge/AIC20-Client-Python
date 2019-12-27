@@ -92,8 +92,8 @@ class UnitSpell(Spell):
 
 class Event:
     EVENT = "event‌"
-    def __init__(self, name, args):
-        self.name = name
+    def __init__(self, type, args):
+        self.type = type
         self.args = args
 
     def add_arg(self, arg):
