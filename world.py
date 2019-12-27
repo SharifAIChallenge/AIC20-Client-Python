@@ -11,8 +11,6 @@ from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player
 class World(ABC):
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
-    players = list()
-    players_by_id = dict()
 
     def __init__(self, world=None, queue=None):
         self.game_constants = None
@@ -22,10 +20,12 @@ class World(ABC):
         self.unit_spells = None
         self.current_turn = 0
 
+        self.players = []
         self.player = None
         self.player_friend = None
         self.player_first_enemy = None
         self.player_second_enemy = None
+
         if world is not None:
             self.game_constants = world.game_constants
             self.map = world.map
@@ -33,6 +33,12 @@ class World(ABC):
             self.area_spells = world.area_spells
             self.unit_spells = world.unit_spells
             self.current_turn = world.current_turn
+
+            self.players = world.players
+            self.player = world.player
+            self.player_friend = world.player_friend
+            self.player_first_enemy = world.player_first_enemy
+            self.player_second_enemy = world.player_second_enemy
             # game_constants = world._get_game_constants()
             # self.game_constants = game_constants
             # self.max_ap = game_constants.max_ap
@@ -50,6 +56,21 @@ class World(ABC):
             # self.max_score_diff = world.max_score_diff
         else:
             self.queue = queue  ######################in chieeeeee?!!!!!!!!!!!!!!!!!#############
+
+    def _get_player_by_id(self, player_id):
+        for player in self.players:
+            if player.player_id == player_id:
+                return player
+        return None
+
+    def _get_spell_by_type_id(self, type_id):
+        for spell in self.area_spells:
+            if spell.type == type_id:
+                return spell
+        for spell in self.unit_spells:
+            if spell.type == type_id:
+                return spell
+        return None
 
     def _game_constant_init(self, game_constants_msg):
         self.game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
@@ -85,8 +106,8 @@ class World(ABC):
                            for b_unit in msg])
 
     def _spells_init(self, msg):
-        self.area_spells = []
-        self.unit_spells = []
+        area_spells = []
+        unit_spells = []
         for spell in msg:
             if msg["isAreaSpell"]:
                 self.area_spells.append(AreaSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"],
@@ -94,7 +115,7 @@ class World(ABC):
                                                   is_damaging=spell["isDamaging"]))
             else:
                 self.unit_spells.append(UnitSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"]))
-
+        self.area_spells = dict()
     def _handle_init_message(self, msg):
         # if World.DEBUGGING_MODE:
         #     if World.LOG_FILE_POINTER is not None:
@@ -106,10 +127,24 @@ class World(ABC):
         self._base_unit_init(msg["baseUnits"])
         self._spells_init(msg["spells"])
 
+    def _handle_turn_kings(self, msg):
+        for king_msg in msg:
+            hp = king_msg["hp"] if king_msg["hp"] >= 0 else -1
+            self.players_by_id[king_msg["playerId"]].king.hp = hp
+
+    def _handle_turn_units(self, msg):
+        pass
+
+    def _handle_turn_cast_spells(self, msg):
+        pass
+
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
         self.player.deck = [self.base_units[deck["typeId"]] for deck in msg["deck"]]
         self.player.hand = [self.base_units[hand["typeId"]] for hand in msg["hand"]]
+        self._handle_turn_kings(msg["kings"])
+        self._handle_turn_units(msg["units"])
+        self._handle_turn_cast_spells(msg["castSpells"])
 
         pass
 
