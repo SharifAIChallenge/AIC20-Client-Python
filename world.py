@@ -173,14 +173,16 @@ class World(ABC):
             cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
             if isinstance(cast_spell, AreaSpell):
                 cast_spell_list.append(
-                    CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell))
+                    CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell,
+                                  affected_units=[self.get_unit_by_id(affected_unit_id) for
+                                                  affected_unit_id in
+                                                  cast_spell_msg["affectedUnits"]]
+                                  ))
             elif isinstance(cast_spell, UnitSpell):
                 cast_spell_list.append(CastUnitSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"],
                                                      target_cell=cell, unit_id=cast_spell_msg["unitId"],
                                                      path_id=cast_spell_msg["pathId"],
-                                                     affected_units=[self.get_unit_by_id(affected_unit_id) for
-                                                                     affected_unit_id in
-                                                                     cast_spell_msg["affectedUnits"]]))
+                                                     ))
         self.cast_spell = dict((cast_spell_i.type_id, cast_spell_i) for cast_spell_i in cast_spell_list)
 
     def get_cast_spell_by_type(self, type):

@@ -148,18 +148,18 @@ class CastSpell:
 
 
 class CastUnitSpell(CastSpell):
-    def __init__(self, type_id, caster_id, target_cell, unit_id, path_id, affected_units):
+    def __init__(self, type_id, caster_id, target_cell, unit_id, path_id):
         super().__init__(type_id=type_id, caster_id=caster_id)
         self.target_cell = target_cell
         self.unit_id = unit_id
         self.path_id = path_id
-        self.affected_units = affected_units
 
 
 class CastAreaSpell(CastSpell):
-    def __init__(self, type_id, caster_id, center):
+    def __init__(self, type_id, caster_id, center, affected_units):
         super().__init__(type_id=type_id, caster_id=caster_id)
         self.center = center
+        self.affected_units = affected_units
 
 
 class ServerConstants:
