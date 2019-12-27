@@ -1,12 +1,12 @@
 from controller import GameConstants
 from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path
 
-
+from abc import ABC, abstractmethod
 #################### Soalat?
 # queue chie tuye world
 # chera inhamme argument ezafi dare world
 
-class World:
+class World(ABC):
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
 
@@ -16,12 +16,14 @@ class World:
         self.base_units = None
         self.area_spells = None
         self.unit_spells = None
+        self.current_turn = 0
         if world is not None:
             self.game_constants = world.game_constants
             self.map = world.map
             self.base_units = world.base_units
             self.area_spells = world.area_spells
             self.unit_spells = world.unit_spells
+            self.current_turn = world.current_turn
             # game_constants = world._get_game_constants()
             # self.game_constants = game_constants
             # self.max_ap = game_constants.max_ap
@@ -90,7 +92,9 @@ class World:
         self._spells_init(msg["spells"])
 
     def _handle_pick_message(self, msg):
+        pass
 
+    def _handle_turn_message(self, message):
         pass
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
@@ -107,6 +111,10 @@ class World:
         pass
 
     def get_second_enemy_id(self):
+        pass
+
+    # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
+    def choose_deck(self, units):
         pass
 
     # returns a cell that is the fortress of player with player_id
