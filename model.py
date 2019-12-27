@@ -8,10 +8,10 @@ class Map:
         self.paths = paths
         self.units = []
         self.kings = kings
-        self.cells = [[Cell(row=row, col=col) for col in range(column_count)] for row in range(row_count)]
+        self._cells = [[Cell(row=row, col=col) for col in range(column_count)] for row in range(row_count)]
 
     def get_cell(self, row, column):
-        return self.cells[row][column]
+        return self._cells[row][column]
 
 class Player:
     def __init__(self, player_id, king):
