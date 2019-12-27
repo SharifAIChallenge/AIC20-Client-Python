@@ -8,7 +8,10 @@ class Map:
         self.paths = paths
         self.units = []
         self.kings = kings
+        self.cells = [[Cell(row=row, col=col) for col in range(column_count)] for row in range(row_count)]
 
+    def get_cell(self, row, column):
+        return self.cells[row][column]
 
 class Player:
     def __init__(self, player_id, king):
@@ -98,6 +101,27 @@ class Event:
 
     def add_arg(self, arg):
         self.args.append(arg)
+
+
+class CastSpell:
+    def __init__(self, type_id, caster_id):
+        self.type_id = type_id
+        self.caster_id = caster_id
+
+
+class CastUnitSpell(CastSpell):
+    def __init__(self, type_id, caster_id, target_cell, unit_id, path_id, affected_units):
+        super().__init__(type_id=type_id, caster_id=caster_id)
+        self.target_cell = target_cell
+        self.unit_id = unit_id
+        self.path_id = path_id
+        self.affected_units = affected_units
+
+
+class CastAreaSpell(CastSpell):
+    def __init__(self, type_id, caster_id, center):
+        super().__init__(type_id=type_id, caster_id=caster_id)
+        self.center = center
 
 
 class ServerConstants:

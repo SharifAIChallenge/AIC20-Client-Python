@@ -1,12 +1,15 @@
 from abc import ABC
 import time
 
-from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates
+from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
+    CastAreaSpell, CastUnitSpell
 
 
 #################### Soalat?
 # queue chie tuye world
 # chera inhamme argument ezafi dare world
+
+
 
 
 class World(ABC):
@@ -30,6 +33,8 @@ class World(ABC):
         self.player_first_enemy = None
         self.player_second_enemy = None
 
+        self.cast_spell = None
+
         if world is not None:
             self.game_constants = world.game_constants
 
@@ -48,6 +53,8 @@ class World(ABC):
             self.player_friend = world.player_friend
             self.player_first_enemy = world.player_first_enemy
             self.player_second_enemy = world.player_second_enemy
+
+            self.cast_spell = world.cast_spell
             # game_constants = world._get_game_constants()
             # self.game_constants = game_constants
             # self.max_ap = game_constants.max_ap
@@ -113,6 +120,12 @@ class World(ABC):
         self.player_second_enemy = self.players[3]
         self.map = Map(row_count=row_num, column_count=col_num, paths=paths, kings=kings)
 
+    def get_unit_by_id(self, unit_id):
+        for unit in self.map.units:
+            if unit.unit_id == unit_id:
+                return  unit
+        return None
+
     def _base_unit_init(self, msg):
         self.base_units = dict([(b_unit["typeId"], BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"], base_attack=b_unit["baseAttack"],
                                     base_range=b_unit["baseRange"], target=b_unit["target"],
@@ -146,10 +159,21 @@ class World(ABC):
             self.players_by_id[king_msg["playerId"]].king.hp = hp
 
     def _handle_turn_units(self, msg):
+
         pass
 
     def _handle_turn_cast_spells(self, msg):
-        pass
+        cast_spell_list = []
+        for cast_spell_msg in msg:
+            cast_spell = self.get_spell_by_type_id(cast_spell_msg["typeId"])
+            cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
+            if isinstance(cast_spell, AreaSpell):
+                cast_spell_list.append(CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell))
+            elif isinstance(cast_spell, UnitSpell):
+                cast_spell_list.append(CastUnitSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"],
+                                                     target_cell=cell, unit_id=cast_spell_msg["unitId"],
+                                                     path_id=cast_spell_msg["pathId"],
+                                                     affected_units=[self.get_unit_by_id(affected_unit_id) for affected_unit_id in cast_spell_msg["affectedUnits"]]))
 
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
