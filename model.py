@@ -8,16 +8,14 @@ class Map:
 
 
 class Player:
-    def __init__(self):
-        self.player_id = 0
+    def __init__(self, player_id, king):
+        self.player_id = player_id
         self.deck = None
         self.hand = []
         self.spells = []
         self.ap = 0
-        self.hp = 0
-        self.is_alive = True
         self.upgrade_tokens = 0
-        self.king = None
+        self.king = king
 
 
 class Unit:
@@ -68,16 +66,12 @@ class BaseUnit:
 
 
 class King:
-    def __init__(self, is_your_friend, is_you, player_id=0, center=None, hp=0, attack=0, range=0):
-        self.player_id = player_id
+    def __init__(self, center=None, hp=0, attack=0, range=0):
         self.center = center
         self.hp = hp
         self.level = 0
         self.attack = attack
         self.range = range
-        self.is_you = is_you
-        self.is_your_friend = is_your_friend
-
 
 class AreaSpell(Spell):
     def __init__(self, type_id, turn_effect, range, power, is_damaging):

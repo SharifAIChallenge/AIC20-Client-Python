@@ -44,12 +44,6 @@ class Controller:
         if message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_INIT:
             self.world._handle_init_message(message)
 
-        elif message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_PICK:
-            new_world = World(world=self.world)
-            new_world._handle_pick_message(message)
-            threading.Thread(target=self.launch_on_thread, args=(self.client.pick, 'pick', new_world,
-                                                                 [new_world.current_turn])).start()
-
         elif message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_TURN:
             new_world = World(world=self.world)
             new_world._handle_turn_message(message)

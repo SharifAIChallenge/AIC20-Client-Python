@@ -1,7 +1,7 @@
 from abc import ABC
 
 from controller import GameConstants
-from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path
+from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player
 
 
 #################### Soalat?
@@ -11,6 +11,7 @@ from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path
 class World(ABC):
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
+    players = list()
 
     def __init__(self, world=None, queue=None):
         self.game_constants = None
@@ -64,17 +65,22 @@ class World(ABC):
         col_num = map_msg["cols"]
         paths = [Path(path["id"], [Cell(cell["row"], cell["column"]) for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
-        kings = [King(player_id=king["playerId"], is_you=king["isYou"], is_your_friend=king["isYourFriend"],
-                      center=Cell(king["row"], king["col"]), hp=king["hp"],
-                      attack=king["attack"], range=king["range"]) for king in map_msg["kings"]]
+        kings = [King(center=Cell(king["row"], king["col"]), hp=king["hp"],
+                      attack=king["attack"], range=king["range"])
+                 for king in map_msg["kings"]]
+        players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
+        self.player = players[0]
+        self.player_friend = players[1]
+        self.player_first_enemy = players[2]
+        self.player_second_enemy = players[3]
         self.map = Map(row_count=row_num, column_count=col_num, paths=paths, kings=kings)
 
     def _base_unit_init(self, msg):
-        self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"], base_attack=b_unit["baseAttack"],
+        self.base_units = dict([(b_unit["typeId"], BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"], base_attack=b_unit["baseAttack"],
                                     base_range=b_unit["baseRange"], target=b_unit["target"],
                                     is_flying=b_unit["isFlying"],
-                                    is_multiple=b_unit["isMultiple"])
-                           for b_unit in msg]
+                                    is_multiple=b_unit["isMultiple"]))
+                           for b_unit in msg])
 
     def _spells_init(self, msg):
         self.area_spells = []
@@ -98,10 +104,12 @@ class World(ABC):
         self._base_unit_init(msg["baseUnits"])
         self._spells_init(msg["spells"])
 
-    def _handle_pick_message(self, msg):
-        pass
+    def _handle_turn_message(self, msg):
+        self.current_turn = msg['currTurn']
+        self.player.deck = [self.base_units[deck["typeId"]] for deck in msg["deck"]]
+        self.player.hand = [self.base_units[hand["typeId"]] for hand in msg["hand"]]
 
-    def _handle_turn_message(self, message):
+
         pass
 
         # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
