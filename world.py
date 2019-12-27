@@ -65,7 +65,7 @@ class World(ABC):
     def get_current_time_millis(self):
         return int(round(time.time() * 1000))
 
-    def get_time_passed(self):
+    def get_time_past(self):
         return self.get_current_time_millis() - self.start_time
 
     def get_player_by_id(self, player_id):
