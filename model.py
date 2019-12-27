@@ -1,5 +1,3 @@
-from enum import Enum
-
 class Map:
     def __init__(self, row_count, column_count, paths, kings):
         self.row_count = row_count
@@ -39,17 +37,16 @@ class Spell:
 
 
 class Cell:
-    def __init__(self, row = 0, col = 0):
+    def __init__(self, row=0, col=0):
         self.row = 0
         self.col = 0
         self.units = []
 
 
 class Path:
-    def __init__(self, path_id = 0 , cells = []):
+    def __init__(self, path_id=0, cells=[]):
         self.cells = cells
         self.path_id = path_id
-
 
 
 class Deck:
@@ -69,7 +66,7 @@ class BaseUnit:
 
 
 class King:
-    def __init__(self, is_your_friend, is_you,player_id = 0, center = None, hp = 0, attack = 0, range = 0):
+    def __init__(self, is_your_friend, is_you, player_id=0, center=None, hp=0, attack=0, range=0):
         self.playerId = player_id
         self.center = center
         self.hp = hp
@@ -92,6 +89,7 @@ class UnitSpell(Spell):
     def __init__(self, type_id, turn_effect):
         super().__init__(type_id=type_id, turn_effect=turn_effect)
 
+
 class Event:
     EVENT = "event‌"
 
@@ -101,6 +99,7 @@ class Event:
 
     def add_arg(self, arg):
         self.args.append(arg)
+
 
 class ServerConstants:
     KEY_ARGS = "args"
@@ -121,8 +120,3 @@ class ServerConstants:
     CHANGE_TYPE_DEL = "d"
     CHANGE_TYPE_MOV = "m"
     CHANGE_TYPE_ALT = "c"
-
-class Phase(Enum):
-    PICK = "PICK"
-    MOVE = "MOVE"
-    ACTION = "ACTION"

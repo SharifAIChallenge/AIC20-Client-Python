@@ -1,9 +1,6 @@
-import time
-
-__author__ = 'pezzati'
-
-import socket
 import json
+import socket
+import time
 
 from model import *
 
@@ -28,7 +25,8 @@ class Network:
                 connect_attempt += 1
                 self.s.connect((self.ip, self.port))
                 connected = True
-                self.send({ServerConstants.KEY_NAME: ServerConstants.CONFIG_KEY_TOKEN, ServerConstants.KEY_ARGS: [self.token]})
+                self.send({ServerConstants.KEY_NAME: ServerConstants.CONFIG_KEY_TOKEN,
+                           ServerConstants.KEY_ARGS: [self.token]})
                 init = self.receive()
                 if init[ServerConstants.KEY_NAME] == "wrong token":
                     raise ConnectionRefusedError("wrong token")

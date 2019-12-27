@@ -1,12 +1,13 @@
-from model import ServerConstants, Path, Cell, King, Map, BaseUnit, AreaSpell, UnitSpell
-from model import Phase
 import threading
+from queue import Queue
+from threading import Thread
 
+from AI import AI
+from model import Phase
+from model import ServerConstants
 from network import Network
 from world import World
-from queue import Queue
-from AI import AI
-from threading import Thread
+
 
 class GameConstants:
     def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
@@ -38,11 +39,11 @@ class Controller:
         self.turn_num = 0
         self.preprocess_flag = False
 
-
     def handle_message(self, message):
         if message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_INIT:
             self.world._handle_init_message(message)
-            threading.Thread(target=self.launch_on_thread, args=(self.client.preprocess, 'init', self.world, [])).start()
+            threading.Thread(target=self.launch_on_thread,
+                             args=(self.client.preprocess, 'init', self.world, [])).start()
         elif message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_PICK:
             new_world = World(world=self.world)
             new_world._handle_pick_message(message)
@@ -53,11 +54,11 @@ class Controller:
             new_world._handle_turn_message(message)
             if new_world.current_phase == Phase.MOVE:
                 threading.Thread(target=self.launch_on_thread, args=(self.client.move, 'move', new_world,
-                                                              [new_world.current_turn,
-                                                               new_world.move_phase_num])).start()
+                                                                     [new_world.current_turn,
+                                                                      new_world.move_phase_num])).start()
             elif new_world.current_phase == Phase.ACTION:
                 threading.Thread(target=self.launch_on_thread, args=(self.client.action, 'action', new_world,
-                                                              [new_world.current_turn])).start()
+                                                                     [new_world.current_turn])).start()
         elif message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_SHUTDOWN:
             self.terminate()
 

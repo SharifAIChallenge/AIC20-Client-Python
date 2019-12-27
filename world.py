@@ -1,5 +1,6 @@
 from controller import GameConstants
-from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Phase
+from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path
+
 
 #################### Soalat?
 # queue chie tuye world
@@ -37,8 +38,7 @@ class World:
             # self.heroes = world.heroes
             # self.max_score_diff = world.max_score_diff
         else:
-            self.queue = queue ######################in chieeeeee?!!!!!!!!!!!!!!!!!#############
-
+            self.queue = queue  ######################in chieeeeee?!!!!!!!!!!!!!!!!!#############
 
     def _game_constant_init(self, game_constants_msg):
         self.game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
@@ -62,7 +62,8 @@ class World:
 
     def _base_unit_init(self, msg):
         self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"], base_attack=b_unit["baseAttack"],
-                                    base_range=b_unit["baseRange"], target=b_unit["target"], is_flying=b_unit["isFlying"],
+                                    base_range=b_unit["baseRange"], target=b_unit["target"],
+                                    is_flying=b_unit["isFlying"],
                                     is_multiple=b_unit["isMultiple"])
                            for b_unit in msg]
 
@@ -72,7 +73,8 @@ class World:
         for spell in msg:
             if msg["isAreaSpell"]:
                 self.area_spells.append(AreaSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"],
-                                                  range=spell["range"], power=spell["power"], is_damaging=spell["isDamaging"]))
+                                                  range=spell["range"], power=spell["power"],
+                                                  is_damaging=spell["isDamaging"]))
             else:
                 self.unit_spells.append(UnitSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"]))
 
@@ -92,7 +94,7 @@ class World:
         pass
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
-    def cast_unit_spell(self, unit_id, path_id, index, spell, spell_id):
+    def cast_unit_spell(self, unit_id, path_id, index, spell):
         pass
 
     # cast spell in the cell 'center'
@@ -149,6 +151,12 @@ class World:
     def get_friend_id(self):
         pass
 
+    def get_first_enemy_id(self):
+        pass
+
+    def get_second_enemy_id(self):
+        pass
+
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_deck(self, units):
         pass
@@ -186,6 +194,7 @@ class World:
 
     # return the shortest path from player_id fortress to cell
     # this path is in the available path list
+    # path may cross from friend
     def get_shortest_path_to_cell(self, player_id, cell):
         pass
 
@@ -206,7 +215,7 @@ class World:
         pass
 
     # place unit with type_id in path_id
-    def play_unit(self, type_id, path_id):
+    def put_unit(self, type_id, path_id):
         pass
 
     # return the number of turns passed
@@ -218,11 +227,11 @@ class World:
         pass
 
     # return the time left to pick units and put in deck in the first turn
-    def get_pick_timout(self):
+    def get_pick_timeout(self):
         pass
 
     # a constant limit for each turn
-    def get_turn_timout(self):
+    def get_turn_timeout(self):
         pass
 
     # returns the time left for turn (miliseconds)
@@ -230,6 +239,5 @@ class World:
         pass
 
     # returns the health point remaining for each player
-    def get_player_hp(self):
+    def get_player_hp(self, player_id):
         pass
-
