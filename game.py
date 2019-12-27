@@ -81,10 +81,12 @@ class Game(World):
         for p in self.map.paths:
             if cell in p.cells:
                 paths.append(p)
+        return paths
 
     # return units of player that are currently in map
     def get_player_units(self, player_id):
-        pass
+        player = self.get_player_by_id(player_id)
+        return player.units
 
     # return a list of units in a cell
     def get_cell_units(self, cell):
@@ -94,7 +96,11 @@ class Game(World):
     # this path is in the available path list
     # path may cross from friend
     def get_shortest_path_to_cell(self, player_id, cell):
-        pass
+        shortest_path_to_cell = self.shortest_path.get(player_id)
+        if shortest_path_to_cell[cell.row][cell.col] == -1:
+            return None
+        return shortest_path_to_cell[cell.row][cell.col]
+
 
     # returns the limit of ap for each player
     def get_max_ap(self):
@@ -102,7 +108,7 @@ class Game(World):
 
     # get remaining ap
     def get_remaining_ap(self):
-        pass
+        return self.player.ap
 
     # returns a list of units in hand
     def get_hand(self):

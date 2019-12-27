@@ -13,6 +13,7 @@ class Map:
     def get_cell(self, row, column):
         return self._cells[row][column]
 
+
 class Player:
     def __init__(self, player_id, king):
         self.player_id = player_id
@@ -22,6 +23,7 @@ class Player:
         self.ap = 0
         self.upgrade_tokens = 0
         self.king = king
+        self.units = []
 
 
 class Unit:
@@ -168,10 +170,11 @@ class GameConstants:
             World.LOG_FILE_POINTER = open('client' + '-' +
                                           datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S.%f") + '.log', 'w+')
 
+
 class TurnUpdates:
     def __init__(self, received_spell=None, friend_received_spell=None,
-                got_range_upgrade=None, got_damage_upgrade=None,
-	            available_range_upgrades=None, available_damage_upgrades=None, turn_updates=None):
+                 got_range_upgrade=None, got_damage_upgrade=None,
+                 available_range_upgrades=None, available_damage_upgrades=None, turn_updates=None):
         self.received_spell = received_spell
         self.friend_received_spell = friend_received_spell
         self.got_range_upgrade = got_range_upgrade

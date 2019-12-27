@@ -1,5 +1,5 @@
-from abc import ABC
 import time
+from abc import ABC
 
 from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
     CastAreaSpell, CastUnitSpell
@@ -8,8 +8,6 @@ from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player,
 #################### Soalat?
 # queue chie tuye world
 # chera inhamme argument ezafi dare world
-
-
 
 
 class World(ABC):
@@ -48,6 +46,7 @@ class World(ABC):
             self.received_spell = world.received_spell
             self.friend_received_spell = world.friend_received_spell
 
+            self.shortest_path = dict()
             self.players = world.players
             self.player = world.player
             self.player_friend = world.player_friend
@@ -123,15 +122,16 @@ class World(ABC):
     def get_unit_by_id(self, unit_id):
         for unit in self.map.units:
             if unit.unit_id == unit_id:
-                return  unit
+                return unit
         return None
 
     def _base_unit_init(self, msg):
-        self.base_units = dict([(b_unit["typeId"], BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"], base_attack=b_unit["baseAttack"],
-                                    base_range=b_unit["baseRange"], target=b_unit["target"],
-                                    is_flying=b_unit["isFlying"],
-                                    is_multiple=b_unit["isMultiple"]))
-                           for b_unit in msg])
+        self.base_units = dict([(b_unit["typeId"], BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
+                                                            base_attack=b_unit["baseAttack"],
+                                                            base_range=b_unit["baseRange"], target=b_unit["target"],
+                                                            is_flying=b_unit["isFlying"],
+                                                            is_multiple=b_unit["isMultiple"]))
+                                for b_unit in msg])
 
     def _spells_init(self, msg):
         for spell in msg:
@@ -168,12 +168,15 @@ class World(ABC):
             cast_spell = self.get_spell_by_type_id(cast_spell_msg["typeId"])
             cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
             if isinstance(cast_spell, AreaSpell):
-                cast_spell_list.append(CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell))
+                cast_spell_list.append(
+                    CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell))
             elif isinstance(cast_spell, UnitSpell):
                 cast_spell_list.append(CastUnitSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"],
                                                      target_cell=cell, unit_id=cast_spell_msg["unitId"],
                                                      path_id=cast_spell_msg["pathId"],
-                                                     affected_units=[self.get_unit_by_id(affected_unit_id) for affected_unit_id in cast_spell_msg["affectedUnits"]]))
+                                                     affected_units=[self.get_unit_by_id(affected_unit_id) for
+                                                                     affected_unit_id in
+                                                                     cast_spell_msg["affectedUnits"]]))
 
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
@@ -183,8 +186,10 @@ class World(ABC):
         self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
 
-        self.turn_updates = TurnUpdates(received_spell=msg["receivedSpell"], friend_received_spell=msg["friendReceivedSpell"],
-                                        got_range_upgrade=msg["gotRangeUpgrade"], got_damage_upgrade=msg["gotDamageUpgrade"],
+        self.turn_updates = TurnUpdates(received_spell=msg["receivedSpell"],
+                                        friend_received_spell=msg["friendReceivedSpell"],
+                                        got_range_upgrade=msg["gotRangeUpgrade"],
+                                        got_damage_upgrade=msg["gotDamageUpgrade"],
                                         available_range_upgrades=msg["availableRangeUpgrades"],
                                         available_damage_upgrades=msg["availableDamageUpgrades"])
 
@@ -192,6 +197,35 @@ class World(ABC):
         self.player_friend.spells = msg["friendSpells"]
 
         self.start_time = self.get_current_time_millis()
+
+    def pre_process_shortest_path(self):
+        def path_count(path):
+            shortest_path_to_cell = []
+            shortest_path_to_cell_num = []
+            for i in range(len(self.map.row_count)):
+                l = []
+                s = []
+                for j in range(len(self.map.column_count)):
+                    l.append(-1)
+                    s.append(-1)
+                shortest_path_to_cell.append(l)
+                shortest_path_to_cell_num.append(s)
+
+            count = 0
+            for i in path.cells:
+                if shortest_path_to_cell_num[i.row][i.col] == -1:
+                    shortest_path_to_cell_num[i.row][i.col] = count
+                    shortest_path_to_cell[i.row][i.col] = path
+                elif shortest_path_to_cell_num[i.row][i.col] > count:
+                    shortest_path_to_cell_num[i.row][i.col] = count
+                    shortest_path_to_cell[i.row][i.col] = path
+                count += 1
+            return shortest_path_to_cell
+
+        for p in self.players:
+            paths = self.get_paths_from_player(p.player_id)
+            for i in range(len(paths)):
+                self.shortest_path.update({p.player_id:path_count(paths[i])})
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_deck(self, type_ids):
