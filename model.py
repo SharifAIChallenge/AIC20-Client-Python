@@ -1,3 +1,6 @@
+from world import World
+
+
 class Map:
     def __init__(self, row_count, column_count, paths, kings):
         self.row_count = row_count
@@ -116,3 +119,38 @@ class ServerConstants:
     CHANGE_TYPE_DEL = "d"
     CHANGE_TYPE_MOV = "m"
     CHANGE_TYPE_ALT = "c"
+
+
+class GameConstants:
+    def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
+                 turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition):
+        self.max_ap = max_ap
+        self.max_turns = max_turns
+        self.turn_timeout = turn_timeout
+        self.pick_timeout = pick_timeout
+        self.turns_to_upgrade = turns_to_upgrade
+        self.turns_to_spell = turns_to_spell
+        self.damage_upgrade_addition = damage_upgrade_addition
+        self.range_upgrade_addition = range_upgrade_addition
+        if World.DEBUGGING_MODE:
+            import datetime
+            World.LOG_FILE_POINTER = open('client' + '-' +
+                                          datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S.%f") + '.log', 'w+')
+
+class TurnUpdates:
+    def __init__(self, received_spell=None, friend_received_spell=None,
+                got_range_upgrade=None, got_damage_upgrade=None,
+	            available_range_upgrades=None, available_damage_upgrades=None, turn_updates=None):
+        self.received_spell = received_spell
+        self.friend_received_spell = friend_received_spell
+        self.got_range_upgrade = got_range_upgrade
+        self.got_damage_upgrade = got_damage_upgrade
+        self.available_damage_upgrade = available_damage_upgrades
+        self.available_range_upgrade = available_range_upgrades
+        if turn_updates != None:
+            self.received_spell = turn_updates.received_spell
+            self.friend_received_spell = turn_updates.friend_received_spell
+            self.got_range_upgrade = turn_updates.got_range_upgrade
+            self.got_damage_upgrade = turn_updates.got_damage_upgrade
+            self.available_damage_upgrade = turn_updates.available_damage_upgrades
+            self.available_range_upgrade = turn_updates.available_range_upgrades
