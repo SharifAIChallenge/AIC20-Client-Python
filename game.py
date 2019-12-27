@@ -3,14 +3,30 @@ from world import World
 
 class Game(World):
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
+
     def choose_deck(self, type_ids):
-        pass
+        for t in type_ids:
+            base_unit = self.base_units.get(t, None)
+            if base_unit is not None:
+                self.player.deck.units.append(base_unit)
 
     def get_my_id(self):
         return self.player.player_id
 
     def get_friend_id(self):
         return self.player_friend.player_id
+
+    def get_friend_by_id(self, player_id):
+        if self.player.player_id == player_id:
+            return self.player_friend
+        elif self.player_friend.player_id == player_id:
+            return self.player
+        elif self.player_first_enemy.player_id == player_id:
+            return self.player_second_enemy
+        elif self.player_second_enemy.player_id == player_id:
+            return self.player_first_enemy
+        else:
+            return None
 
     def get_first_enemy_id(self):
         return self.player_first_enemy.player_id
@@ -20,26 +36,51 @@ class Game(World):
 
     # returns a cell that is the fortress of player with player_id
     def get_player_position(self, player_id):
-        pass
+        player = self.get_player_by_id(player_id)
+        if player is not None:
+            return player.king.center
 
     # return a list of paths starting from the fortress of player with player_id
     # the beginning is from player_id fortress cell
     def get_paths_from_player(self, player_id):
-        pass
+        paths = []
+        player_king_cell = self.get_player_position(player_id)
+        for p in self.map.paths:
+            first_cell = p.cells[0]
+            last_cell = p.cells[len(p.cells) - 1]
+            if first_cell == player_king_cell:
+                paths.append(p)
+                continue
+            if last_cell == player_king_cell:
+                p.cells.reverse()
+                paths.append(p)
+                continue
 
     # returns the path from player_id to its friend beginning from player_id's fortress
     def get_path_to_friend(self, player_id):
-        pass
+        player_king_cell = self.get_player_position(player_id)
+        friend_king_cell = self.get_player_position(self.get_friend_by_id(player_id))
+        for p in self.map.paths:
+            first_cell = p.cells[0]
+            last_cell = p.cells[len(p.cells) - 1]
+            if first_cell == player_king_cell and last_cell == friend_king_cell:
+                return p
+            if last_cell == player_king_cell and first_cell == friend_king_cell:
+                p.cells.reverse()
+                return p
 
     def get_map_height(self):
-        pass
+        return self.map.row_count
 
     def get_map_width(self):
-        pass
+        return self.map.column_count
 
     # return a list of paths crossing one cell
     def get_paths_crossing_cell(self, cell):
-        pass
+        paths = []
+        for p in self.map.paths:
+            if cell in p.cells:
+                paths.append(p)
 
     # return units of player that are currently in map
     def get_player_units(self, player_id):
@@ -47,7 +88,7 @@ class Game(World):
 
     # return a list of units in a cell
     def get_cell_units(self, cell):
-        pass
+        return cell.units
 
     # return the shortest path from player_id fortress to cell
     # this path is in the available path list
@@ -57,7 +98,7 @@ class Game(World):
 
     # returns the limit of ap for each player
     def get_max_ap(self):
-        pass
+        return self.game_constants.max_ap
 
     # get remaining ap
     def get_remaining_ap(self):
@@ -65,11 +106,11 @@ class Game(World):
 
     # returns a list of units in hand
     def get_hand(self):
-        pass
+        return self.player.hand
 
     # returns a list of units in deck
     def get_deck(self):
-        pass
+        return self.player.deck
 
     # place unit with type_id in path_id
     def put_unit(self, type_id, path_id):
@@ -77,27 +118,28 @@ class Game(World):
 
     # return the number of turns passed
     def get_current_turn(self):
-        pass
+        return self.current_turn
 
     # return the limit of turns
     def get_max_turns(self):
-        pass
+        return self.game_constants.max_turns
 
     # return the time left to pick units and put in deck in the first turn
     def get_pick_timeout(self):
-        pass
+        return self.game_constants.pick_timeout
 
     # a constant limit for each turn
     def get_turn_timeout(self):
-        pass
+        return self.game_constants.turn_timeout
 
     # returns the time left for turn (miliseconds)
-    def get_remaining_time(self):
-        pass
+    def get_remaining_time(self, ):
+        return self.get_turn_timeout() - self.get_time_past()
 
     # returns the health point remaining for each player
     def get_player_hp(self, player_id):
-        pass
+        player = self.get_player_by_id(player_id)
+        return player.king.hp
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit_id, path_id, index, spell=None, spell_id=None):
