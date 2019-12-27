@@ -106,7 +106,7 @@ class World(ABC):
 
         # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
 
-    def choose_deck(self, units):
+    def choose_deck(self, type_ids):
         pass
 
     def get_my_id(self):

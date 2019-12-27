@@ -15,25 +15,25 @@ class Player:
         self.spells = []
         self.ap = 0
         self.hp = 0
-        self.isAlive = True
-        self.upgradeTokens = 0
-        self.king = 0
+        self.is_alive = True
+        self.upgrade_tokens = 0
+        self.king = None
 
 
 class Unit:
     def __init__(self):
-        self.unitId = 0
-        self.baseUnit = None
+        self.unit_id = 0
+        self.base_unit = None
         self.cell = None
         self.path = None
         self.hp = 0
-        self.isHasted = False
+        self.is_hasted = False
 
 
 class Spell:
     def __init__(self, type_id, turn_effect):
         self.type = type_id
-        self.turnEffect = turn_effect
+        self.turn_effect = turn_effect
 
 
 class Cell:
@@ -44,7 +44,9 @@ class Cell:
 
 
 class Path:
-    def __init__(self, path_id=0, cells=[]):
+    def __init__(self, path_id=0, cells=None):
+        if cells is None:
+            cells = []
         self.cells = cells
         self.path_id = path_id
 
@@ -61,8 +63,8 @@ class BaseUnit:
         self.base_attack = base_attack
         self.base_range = base_range
         self.target = target
-        self.isFlying = is_flying
-        self.isMultiple = is_multiple
+        self.is_flying = is_flying
+        self.is_multiple = is_multiple
 
 
 class King:
@@ -92,6 +94,7 @@ class UnitSpell(Spell):
 
 class Event:
     EVENT = "event‌"
+
     def __init__(self, type, args):
         self.type = type
         self.args = args
