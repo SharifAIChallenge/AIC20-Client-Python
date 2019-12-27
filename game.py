@@ -7,17 +7,16 @@ class Game(World):
         pass
 
     def get_my_id(self):
-
-        pass
+        return self.player.player_id
 
     def get_friend_id(self):
-        pass
+        return self.player_friend.player_id
 
     def get_first_enemy_id(self):
-        pass
+        return self.player_first_enemy.player_id
 
     def get_second_enemy_id(self):
-        pass
+        return self.player_second_enemy.player_id
 
     # returns a cell that is the fortress of player with player_id
     def get_player_position(self, player_id):

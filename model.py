@@ -9,7 +9,7 @@ class Map:
 
 class Player:
     def __init__(self):
-        self.playerId = 0
+        self.player_id = 0
         self.deck = None
         self.hand = []
         self.spells = []
@@ -67,7 +67,7 @@ class BaseUnit:
 
 class King:
     def __init__(self, is_your_friend, is_you, player_id=0, center=None, hp=0, attack=0, range=0):
-        self.playerId = player_id
+        self.player_id = player_id
         self.center = center
         self.hp = hp
         self.level = 0
