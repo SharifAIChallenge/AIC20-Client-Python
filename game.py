@@ -1,5 +1,5 @@
+from model import Event, CastUnitSpell, CastAreaSpell
 from world import World
-from model import Event, Unit, GameConstants, CastUnitSpell, CastAreaSpell
 
 
 class Game(World):
@@ -70,10 +70,10 @@ class Game(World):
                 p.cells.reverse()
                 return p
 
-    def get_map_height(self):
+    def get_map_row_num(self):
         return self.map.row_count
 
-    def get_map_width(self):
+    def get_map_col_num(self):
         return self.map.column_count
 
     # return a list of paths crossing one cell
@@ -122,6 +122,8 @@ class Game(World):
     def put_unit(self, type_id, path_id):
         e = Event("putUnit", [type_id, path_id])
         self.queue.put(e)
+
+    # Todo put unit
 
     # return the number of turns passed
     def get_current_turn(self):
@@ -174,15 +176,19 @@ class Game(World):
 
     # returns a list of units the spell casts effects on
     def get_area_spell_targets(self, center, row=None, col=None, spell=None, spell_id=None):
-        pass
+        if spell is None:
+            if spell_id is not None:
+                spell = self.get_cast_spell_by_type(spell_id)
+        if center is not None:
+            pass
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
-        pass
+        return self.game_constants.turns_to_upgrade
 
     # every once in a while a spell is given this remains the remaining time to get new spell
     def get_remaining_turns_to_get_spell(self):
-        pass
+        return self.game_constants.turns_to_spell
 
     # returns area spells that are casted in last turn and returns other players spells also
     def get_cast_area_spell(self, player_id):
@@ -194,13 +200,16 @@ class Game(World):
         return [cast_spell_i for cast_spell_i in self.cast_spell.values()
                 if cast_spell_i.caster_id and isinstance(cast_spell_i, CastUnitSpell)]
 
-    def get_active_poisons_on_unit(self, unit_id=None, unit=None):
-        temp_unit = unit
-        if unit_id is not None:
-            temp_unit = self.get_unit_by_id(unit_id)
-        if isinstance(temp_unit, Unit):
-            return temp_unit.active_poisons
-        return None
+    def get_cast_spells_on_unit(self, unit=None, unit_id=None):
+        pass
+
+    # def get_active_poisons_on_unit(self, unit_id=None, unit=None):
+    #     temp_unit = unit
+    #     if unit_id is not None:
+    #         temp_unit = self.get_unit_by_id(unit_id)
+    #     if isinstance(temp_unit, Unit):
+    #         return temp_unit.active_poisons
+    #     return None
 
     # returns a list of spells casted on a cell
     def get_range_upgrade_number(self, player_id):
@@ -239,25 +248,45 @@ class Game(World):
             return self.get_spell_by_type_id(spell_type_id)
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
-        if unit != None:
+        if unit is not None:
             self.queue.put(Event("rangeUpgrade", [unit.unit_id]))
-        elif unit_id != None:
+        elif unit_id is not None:
             self.queue.put(Event("rangeUpgrade", unit_id))
 
     def upgrade_unit_damage(self, unit=None, unit_id=None):
-        if unit != None:
+        if unit is not None:
             self.queue.put(Event("damageUpgrade", [unit.unit_id]))
-        elif unit_id != None:
+        elif unit_id is not None:
             self.queue.put(Event("damageUpgrade", unit_id))
 
-    def get_player_clone_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_clone > 0]
+    def get_player_duplicate_unit(self, player_id):
+        pass
 
     def get_player_hasted_units(self, player_id):
         return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_hasted > 0]
 
-    def get_player_poisoned_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.active_poisons > 0]
-
     def get_player_played_units(self, player_id):
         return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.was_played_this_turn]
+
+    def get_unit_target(self, unit=None, unit_id=None):
+        pass
+
+    def get_unit_target_cell(self, unit=None, unit_id=None):
+        pass
+
+    def get_king_target(self, player_id):
+        pass
+
+    def get_king_target_cell(self, player_id):
+        pass
+
+    def get_king_unit_is_attacking_to(self, unit=None, unit_id=None):
+        pass
+
+# def get_player_clone_units(self, player_id):
+#     return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_clone > 0]
+#
+
+# def get_player_poisoned_units(self, player_id):
+#     return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.active_poisons > 0]
+#
