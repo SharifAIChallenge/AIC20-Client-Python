@@ -165,6 +165,8 @@ class ServerConstants:
     KEY_INFO = "info"
     KEY_TURN = "turn"
     KEY_TYPE = "type"
+    KEY_ARGS = "args"
+    KEY_NAME = "name"
 
     CONFIG_KEY_IP = "ip"
     CONFIG_KEY_PORT = "port"
