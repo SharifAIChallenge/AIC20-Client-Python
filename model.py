@@ -130,15 +130,15 @@ class UnitSpell(Spell):
         super().__init__(type_id=type_id, turn_effect=turn_effect)
 
 
-class Event:
-    EVENT = "event‌"
+class Message:
 
-    def __init__(self, type, args):
+    def __init__(self, turn, type, info):
         self.type = type
-        self.args = args
-
-    def add_arg(self, arg):
-        self.args.append(arg)
+        self.info = info
+        self.turn = turn
+    #
+    # def add_arg(self, arg):
+    #     self.args.append(arg)
 
 
 class CastSpell:
@@ -163,8 +163,8 @@ class CastAreaSpell(CastSpell):
 
 
 class ServerConstants:
-    KEY_ARGS = "args"
-    KEY_NAME = "name"
+    KEY_INFO = "info"
+    KEY_TURN = "turn"
     KEY_TYPE = "type"
 
     CONFIG_KEY_IP = "ip"
@@ -176,6 +176,7 @@ class ServerConstants:
     MESSAGE_TYPE_PICK = "pick"
     MESSAGE_TYPE_SHUTDOWN = "shutdown"
     MESSAGE_TYPE_TURN = "turn"
+    MESSAGE_TYPE_END_TURN = "endTurn"
 
     CHANGE_TYPE_ADD = "a"
     CHANGE_TYPE_DEL = "d"

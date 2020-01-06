@@ -4,7 +4,7 @@ from queue import Queue
 from threading import Thread
 
 from AI import AI
-from model import Event
+from model import Message
 from model import ServerConstants
 from network import Network
 from world import World
@@ -24,24 +24,24 @@ class Controller:
 
     #change with switcher
     def handle_message(self, message):
-        if message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_INIT:
-            self.world._handle_init_message(message)
+        if message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
+            self.world._handle_init_message(message[ServerConstants.KEY_INFO])
 
-        elif message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_TURN:
+        elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_TURN:
             new_world = World(world=self.world)
-            new_world._handle_turn_message(message)
-            threading.Thread(target=self.launch_on_thread, args=(self.client.turn, 'turn', new_world,
-                                                                     [new_world.current_turn])).start()
+            new_world._handle_turn_message(message[ServerConstants.KEY_INFO])
+            threading.Thread(target=self.launch_on_thread, args=(self.client.turn, new_world)).start()
 
-        elif message[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_SHUTDOWN:
+        elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_SHUTDOWN:
             self.terminate()
 
-    def launch_on_thread(self, action, name, new_world, args):
+    def launch_on_thread(self, action, world):
         try:
-            action(new_world)
+            action(world)
         except Exception as e:
+            print("Error in client:")
             print(e)
-        new_world.queue.put(Event(name + '-end', args))
+        world.queue.put(Message(type=ServerConstants.MESSAGE_TYPE_END_TURN, turn=world.current_turn, info=""))
 
     def start(self):
         self.read_settings()
@@ -53,16 +53,12 @@ class Controller:
 
         def run():
             while self.sending_flag:
-                event = self.queue.get()
+                message = self.queue.get()
                 self.queue.task_done()
-                message = {
-                    'name': Event.EVENT,
-                    'args': [{'type': event.type, 'args': event.args}]
-                }
+
                 if World.DEBUGGING_MODE and World.LOG_FILE_POINTER is not None:
                     World.LOG_FILE_POINTER.write('------send message to server-----\n ' + message.__str__())
                 self.network.send(message)
-
         Thread(target=run, daemon=True).start()
 
     def read_settings(self):
