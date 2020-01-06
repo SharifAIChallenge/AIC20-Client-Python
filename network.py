@@ -25,12 +25,13 @@ class Network:
                 connect_attempt += 1
                 self.s.connect((self.ip, self.port))
                 connected = True
-                self.send({ServerConstants.KEY_NAME: ServerConstants.CONFIG_KEY_TOKEN,
-                           ServerConstants.KEY_ARGS: [self.token]})
+                self.send({ServerConstants.KEY_TYPE: ServerConstants.CONFIG_KEY_TOKEN,
+                           ServerConstants.KEY_TURN: 0,
+                           ServerConstants.KEY_INFO: {ServerConstants.CONFIG_KEY_TOKEN:self.token}})
                 init = self.receive()
-                if init[ServerConstants.KEY_NAME] == "wrong token":
+                if init[ServerConstants.KEY_TYPE] == "wrong token":
                     raise ConnectionRefusedError("wrong token")
-                elif not init[ServerConstants.KEY_NAME] == ServerConstants.MESSAGE_TYPE_INIT:
+                elif not init[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
                     self.close()
                     raise IOError("first message was not init")
             except Exception as e:
