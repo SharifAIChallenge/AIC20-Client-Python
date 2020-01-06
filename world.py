@@ -129,7 +129,6 @@ class World(ABC):
         #     if World.LOG_FILE_POINTER is not None:
         #         World.LOG_FILE_POINTER.write(str(msg))
         #         World.LOG_FILE_POINTER.write('\n')
-        msg = msg['args'][0]
         self._game_constant_init(msg['gameConstants'])
         self._map_init(msg["map"])
         self._base_unit_init(msg["baseUnits"])
