@@ -1,4 +1,3 @@
-from world import World
 
 
 class Map:
@@ -195,10 +194,10 @@ class GameConstants:
         self.turns_to_spell = turns_to_spell
         self.damage_upgrade_addition = damage_upgrade_addition
         self.range_upgrade_addition = range_upgrade_addition
-        if World.DEBUGGING_MODE:
-            import datetime
-            World.LOG_FILE_POINTER = open('client' + '-' +
-                                          datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S.%f") + '.log', 'w+')
+        # if World.DEBUGGING_MODE:
+        #     import datetime
+        #     World.LOG_FILE_POINTER = open('client' + '-' +
+        #                                   datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S.%f") + '.log', 'w+')
 
 
 class TurnUpdates:

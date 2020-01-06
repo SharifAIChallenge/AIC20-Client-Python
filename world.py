@@ -1,8 +1,7 @@
 import time
 from abc import ABC
 
-from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell, Unit
+from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, CastAreaSpell, CastUnitSpell, Unit
 
 
 #################### Soalat?
