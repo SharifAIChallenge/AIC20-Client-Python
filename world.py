@@ -1,7 +1,8 @@
 import time
 from abc import ABC
 
-from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, CastAreaSpell, CastUnitSpell, Unit
+from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
+    CastAreaSpell, CastUnitSpell, Unit, Spell
 
 
 #################### Soalat?
@@ -20,8 +21,6 @@ class World(ABC):
 
         self.map = None
         self.base_units = None
-        self.area_spells = None
-        self.unit_spells = None
         self.current_turn = 0
 
         self.players = []
@@ -29,6 +28,7 @@ class World(ABC):
         self.player_friend = None
         self.player_first_enemy = None
         self.player_second_enemy = None
+        self.spells = None
 
         self.cast_spell = None
 
@@ -39,8 +39,7 @@ class World(ABC):
 
             self.map = world.map
             self.base_units = world.base_units
-            self.area_spells = world.area_spells
-            self.unit_spells = world.unit_spells
+            self.spells = world.spells
             self.current_turn = world.current_turn
             self.received_spell = world.received_spell
             self.friend_received_spell = world.friend_received_spell
@@ -91,7 +90,7 @@ class World(ABC):
         col_num = map_msg["cols"]
         paths = [Path(path["id"], [Cell(cell["row"], cell["column"]) for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
-        kings = [King(center=Cell(king["row"], king["col"]), hp=king["hp"],
+        kings = [King(center=Cell(king["center"]["row"], king["center"]["col"]), hp=king["hp"],
                       attack=king["attack"], range=king["range"])
                  for king in map_msg["kings"]]
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
@@ -116,13 +115,14 @@ class World(ABC):
                                 for b_unit in msg])
 
     def _spells_init(self, msg):
-        for spell in msg:
-            if msg["isAreaSpell"]:
-                self.area_spells.append(AreaSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"],
-                                                  range=spell["range"], power=spell["power"],
-                                                  is_damaging=spell["isDamaging"]))
-            else:
-                self.unit_spells.append(UnitSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"]))
+        self.spells = [Spell(type=spell["type"],
+                             type_id=spell["typeId"],
+                             duration=spell["duration"],
+                             priority=spell["priority"],
+                             range=spell["range"],
+                             power=spell["power"],
+                             target=spell["target"])
+                       for spell in msg]
 
     def _handle_init_message(self, msg):
         # if World.DEBUGGING_MODE:

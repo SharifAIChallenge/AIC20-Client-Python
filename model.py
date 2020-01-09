@@ -1,3 +1,4 @@
+from enum import Enum
 
 
 class Map:
@@ -58,10 +59,50 @@ class Unit:
         self.active_poisons = active_poisons
         self.was_played_this_turn = was_played_this_turn
 
+
+class SpellTarget(Enum):
+    SELF = 1
+    ALLIED = 2
+    ENEMY = 3
+    @staticmethod
+    def get_value(string):
+        if string == "SELF":
+            return SpellTarget.SELF
+        if string == "ALLIED":
+            return SpellTarget.ALLIED
+        if string == "ENEMY":
+            return SpellTarget.ENEMY
+        return None
+
+class SpellType(Enum):
+    HP = 1
+    TELE = 2
+    DUPLICATE = 3
+    HASTE = 4
+    @staticmethod
+    def get_value(string):
+        if string == "HP":
+            return SpellType.HP
+        if string == "TELE":
+            return SpellType.TELE
+        if string == "DUPLICATE":
+            return SpellType.DUPLICATE
+        if string == "HASTE":
+            return SpellType.HASTE
+        return None
+
+
 class Spell:
-    def __init__(self, type_id, turn_effect):
-        self.type = type_id
-        self.turn_effect = turn_effect
+    def __init__(self, type, type_id, duration, priority, range, power, target):
+        self.type = SpellType.get_value(type)
+        self.type_id = type_id
+        self.turn_effect = duration
+        self.priority = priority
+        self.range = range
+        self.power = power
+        self.target = SpellTarget.get_value(target)
+
+
 
 
 class Cell:
@@ -115,19 +156,19 @@ class King:
         self.attack = attack
         self.range = range
 
-
-class AreaSpell(Spell):
-    def __init__(self, type_id, turn_effect, range, power, is_damaging):
-        super().__init__(type_id=type_id, turn_effect=turn_effect)
-        self.range = range
-        self.power = power
-        self.is_damaging = is_damaging
-
-
-class UnitSpell(Spell):
-    def __init__(self, type_id, turn_effect):
-        super().__init__(type_id=type_id, turn_effect=turn_effect)
-
+#
+# class AreaSpell(Spell):
+#     def __init__(self, type_id, turn_effect, range, power, is_damaging):
+#         super().__init__(type_id=type_id, turn_effect=turn_effect)
+#         self.range = range
+#         self.power = power
+#         self.is_damaging = is_damaging
+#
+#
+# class UnitSpell(Spell):
+#     def __init__(self, type_id, turn_effect):
+#         super().__init__(type_id=type_id, turn_effect=turn_effect)
+#
 
 class Message:
 

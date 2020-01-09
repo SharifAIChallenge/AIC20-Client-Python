@@ -25,6 +25,7 @@ class Controller:
 
     #change with switcher
     def handle_message(self, message):
+        print(message)
         if message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
             self.world._handle_init_message(message[ServerConstants.KEY_INFO])
 
