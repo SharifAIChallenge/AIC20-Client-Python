@@ -1,11 +1,20 @@
-from model import Event, CastUnitSpell, CastAreaSpell
+import copy
+
+from model import CastUnitSpell, CastAreaSpell, Message, Cell
 from world import World
 
 
 class Game(World):
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
 
-    def choose_deck(self, type_ids):
+    def choose_deck(self, type_ids=None, base_units=None):
+        if type_ids is None:
+            if base_units is None:
+                return
+            type_ids = []
+            for u in base_units:
+                type_ids.append(u.type_id)
+
         for t in type_ids:
             base_unit = self.base_units.get(t, None)
             if base_unit is not None:
@@ -77,7 +86,12 @@ class Game(World):
         return self.map.column_count
 
     # return a list of paths crossing one cell
-    def get_paths_crossing_cell(self, cell):
+    def get_paths_crossing_cell(self, cell=None, row=None, col=None):
+        if cell is None:
+            if row is None or col is None:
+                return
+            cell = Cell(row, col)
+
         paths = []
         for p in self.map.paths:
             if cell in p.cells:
@@ -96,7 +110,12 @@ class Game(World):
     # return the shortest path from player_id fortress to cell
     # this path is in the available path list
     # path may cross from friend
-    def get_shortest_path_to_cell(self, player_id, cell):
+    def get_shortest_path_to_cell(self, player_id, cell=None, row=None, col=None):
+        if cell is None:
+            if row is None or col is None:
+                return
+            cell = Cell(row, col)
+
         shortest_path_to_cell = self.shortest_path.get(player_id)
         if shortest_path_to_cell[cell.row][cell.col] == -1:
             return None
@@ -119,11 +138,15 @@ class Game(World):
         return self.player.deck
 
     # place unit with type_id in path_id
-    def put_unit(self, type_id, path_id):
+    def put_unit(self, type_id=None, path_id=None, base_unit=None, path=None):
+        if base_unit is not None:
+            type_id = base_unit.type_id
+        if path is not None:
+            path_id = path.path_id
+        if path_id is None or type_id is None:
+            return
         e = Event("putUnit", [type_id, path_id])
         self.queue.put(e)
-
-    # Todo put unit
 
     # return the number of turns passed
     def get_current_turn(self):
@@ -160,7 +183,8 @@ class Game(World):
         cell = path.cells[index]
         if spell is None:
             spell = self.get_spell_by_type_id(spell_id)
-        e = Event("castSpell", [spell.type, [cell.row, cell.col], unit_id, path_id])
+        e = Message(type="castSpell", turn=self.get_current_turn()
+                    , info=[spell.type, [cell.row, cell.col], unit_id, path_id])
         self.queue.put(e)
 
     # cast spell in the cell 'center'
@@ -168,10 +192,12 @@ class Game(World):
         if spell is None:
             spell = self.get_spell_by_type_id(spell_id)
         if row is not None and col is not None:
-            e = Event("castSpell", [spell.type, [row, col], -1, -1])
+            e = Message(type="castSpell", turn=self.get_current_turn()
+                        , info=[spell.type, [row, col], -1, -1])
             self.queue.put(e)
         elif center is not None:
-            e = Event("castSpell", [spell.type, [center.row, center.col], -1, -1])
+            e = Message(type="castSpell", turn=self.get_current_turn()
+                        , info=[spell.type, [center.row, center.col], -1, -1])
             self.queue.put(e)
 
     # returns a list of units the spell casts effects on
@@ -249,27 +275,40 @@ class Game(World):
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
         if unit is not None:
-            self.queue.put(Event("rangeUpgrade", [unit.unit_id]))
+            self.queue.put(Message(type="rangeUpgrade", turn=self.get_current_turn()
+                                   , info=[unit.unit_id]))
         elif unit_id is not None:
-            self.queue.put(Event("rangeUpgrade", unit_id))
+            self.queue.put(Message(type="rangeUpgrade", turn=self.get_current_turn()
+                                   , info=unit_id))
 
     def upgrade_unit_damage(self, unit=None, unit_id=None):
         if unit is not None:
-            self.queue.put(Event("damageUpgrade", [unit.unit_id]))
+            self.queue.put(Message(type="damageUpgrade", turn=self.get_current_turn(), info={
+                "unitId": unit.unit_id
+            }))
         elif unit_id is not None:
-            self.queue.put(Event("damageUpgrade", unit_id))
+            self.queue.put(Message(type="damageUpgrade", turn=self.get_current_turn(), info={
+                "unitId": unit.unit_id
+            }))
 
     def get_player_duplicate_unit(self, player_id):
-        pass
+        unit_list = []
+        for u in self.get_player_by_id(player_id).units:
+            if u.is_clone:
+                unit_list.append(u)
+        return unit_list
 
     def get_player_hasted_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_hasted > 0]
+        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.is_hasted > 0]
 
     def get_player_played_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.was_played_this_turn]
+        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.was_played_this_turn]
 
     def get_unit_target(self, unit=None, unit_id=None):
-        pass
+        player = self.get_player_by_id(self.get_my_id())
+        units = player.units
+        for unit in units:
+            pass
 
     def get_unit_target_cell(self, unit=None, unit_id=None):
         pass
@@ -281,7 +320,14 @@ class Game(World):
         pass
 
     def get_king_unit_is_attacking_to(self, unit=None, unit_id=None):
-        pass
+        if unit is not None:
+            unit_id = unit.unit_id
+
+    def get_all_base_unit(self):
+        return copy.deepcopy(self.base_units)
+
+    def get_all_spells(self):
+        return copy.deepcopy(self.area_spells + self.unit_spells)
 
 # def get_player_clone_units(self, player_id):
 #     return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_clone > 0]
