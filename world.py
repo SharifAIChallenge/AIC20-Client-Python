@@ -1,8 +1,7 @@
 import time
 from abc import ABC
 
-from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell, Unit, Spell, Message
+from model import AreaSpell, UnitSpell, BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, CastAreaSpell, CastUnitSpell, Unit
 
 
 #################### Soalat?
@@ -21,6 +20,8 @@ class World(ABC):
 
         self.map = None
         self.base_units = None
+        self.area_spells = None
+        self.unit_spells = None
         self.current_turn = 0
 
         self.players = []
@@ -28,8 +29,8 @@ class World(ABC):
         self.player_friend = None
         self.player_first_enemy = None
         self.player_second_enemy = None
-        self.spells = None
-        self.cast_spells = None
+
+        self.cast_spell = None
 
         if world is not None:
             self.game_constants = world.game_constants
@@ -38,8 +39,11 @@ class World(ABC):
 
             self.map = world.map
             self.base_units = world.base_units
-            self.spells = world.spells
+            self.area_spells = world.area_spells
+            self.unit_spells = world.unit_spells
             self.current_turn = world.current_turn
+            self.received_spell = world.received_spell
+            self.friend_received_spell = world.friend_received_spell
 
             self.shortest_path = dict()
             self.players = world.players
@@ -47,9 +51,7 @@ class World(ABC):
             self.player_friend = world.player_friend
             self.player_first_enemy = world.player_first_enemy
             self.player_second_enemy = world.player_second_enemy
-            self.cast_spells = world.cast_spells
-
-            self.queue = world.queue
+            self.cast_spell = world.cast_spell
         else:
             self.queue = queue
 
@@ -66,8 +68,11 @@ class World(ABC):
         return None
 
     def get_spell_by_type_id(self, type_id):
-        for spell in self.spells:
-            if spell.type_id == type_id:
+        for spell in self.area_spells:
+            if spell.type == type_id:
+                return spell
+        for spell in self.unit_spells:
+            if spell.type == type_id:
                 return spell
         return None
 
@@ -87,7 +92,7 @@ class World(ABC):
         paths = [Path(path["id"], [Cell(cell["row"], cell["col"]) for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
         kings = [King(center=Cell(king["center"]["row"], king["center"]["col"]), hp=king["hp"],
-                      attack=king["attack"], range=king["range"], target_id=-1)
+                      attack=king["attack"], range=king["range"])
                  for king in map_msg["kings"]]
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
         self.player = self.players[0]
@@ -103,29 +108,21 @@ class World(ABC):
         return None
 
     def _base_unit_init(self, msg):
-        self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
-                                    base_attack=b_unit["baseAttack"],
-                                    base_range=b_unit["baseRange"],
-                                    target=b_unit["target"],
-                                    is_flying=b_unit["isFlying"],
-                                    is_multiple=b_unit["isMultiple"])
-                           for b_unit in msg]
-
-    def _get_base_unit_by_id(self, type_id):
-        for base_unit in self.base_units:
-            if base_unit.type_id == type_id:
-                return base_unit
-        return None
+        self.base_units = dict([(b_unit["typeId"], BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
+                                                            base_attack=b_unit["baseAttack"],
+                                                            base_range=b_unit["baseRange"], target=b_unit["target"],
+                                                            is_flying=b_unit["isFlying"],
+                                                            is_multiple=b_unit["isMultiple"]))
+                                for b_unit in msg])
 
     def _spells_init(self, msg):
-        self.spells = [Spell(type=spell["type"],
-                             type_id=spell["typeId"],
-                             duration=spell["duration"],
-                             priority=spell["priority"],
-                             range=spell["range"],
-                             power=spell["power"],
-                             target=spell["target"])
-                       for spell in msg]
+        for spell in msg:
+            if msg["isAreaSpell"]:
+                self.area_spells.append(AreaSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"],
+                                                  range=spell["range"], power=spell["power"],
+                                                  is_damaging=spell["isDamaging"]))
+            else:
+                self.unit_spells.append(UnitSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"]))
 
     def _handle_init_message(self, msg):
         # if World.DEBUGGING_MODE:
@@ -139,9 +136,8 @@ class World(ABC):
 
     def _handle_turn_kings(self, msg):
         for king_msg in msg:
-            hp = king_msg["hp"] if king_msg["hp"] > 0 else -1
+            hp = king_msg["hp"] if king_msg["hp"] >= 0 else -1
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
-            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"]
 
     def _handle_turn_units(self, msg):
         self.map.clear_units()
@@ -164,44 +160,36 @@ class World(ABC):
                         active_poisons=unit_msg["activePoisons"],
                         range=unit_msg("range"),
                         attack=unit_msg("attack"),
-                        was_played_this_turn=unit_msg("wasPlayedThisTurn"),
-                        target_id=unit_msg["target"],
-                        target_cell=Cell(row=unit_msg["targetCell"]["row"], col=unit_msg["targetCell"]["col"]))
+                        was_played_this_turn=unit_msg("wasPlayedThisTurn"))
             self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
             player.units.append(unit)
 
     def _handle_turn_cast_spells(self, msg):
-        self.cast_spells = []
+        cast_spell_list = []
         for cast_spell_msg in msg:
             cast_spell = self.get_spell_by_type_id(cast_spell_msg["typeId"])
             cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
-            affected_units = [self.get_unit_by_id(affected_unit_id) for
-                              affected_unit_id in
-                              cast_spell_msg["affectedUnits"]]
-            if cast_spell.is_area_spell():
-                self.cast_spells.append(
-                    CastAreaSpell(type_id=cast_spell.type_id, caster_id=cast_spell_msg["casterId"], center=cell,
-                                  was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
-                                  remaining_turns=cast_spell_msg["remainingTurns"],
-                                  affected_units=affected_units))
-            elif cast_spell.is_unit_spell():
-                self.cast_spells.append(CastUnitSpell(type_id=cast_spell.type_id, caster_id=cast_spell_msg["casterId"],
+            if isinstance(cast_spell, AreaSpell):
+                cast_spell_list.append(
+                    CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell,
+                                  affected_units=[self.get_unit_by_id(affected_unit_id) for
+                                                  affected_unit_id in
+                                                  cast_spell_msg["affectedUnits"]]
+                                  ))
+            elif isinstance(cast_spell, UnitSpell):
+                cast_spell_list.append(CastUnitSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"],
                                                      target_cell=cell, unit_id=cast_spell_msg["unitId"],
                                                      path_id=cast_spell_msg["pathId"],
-                                                     was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
-                                                     remaining_turns=cast_spell_msg["remainingTurns"],
-                                                     affected_units=affected_units))
+                                                     ))
+        self.cast_spell = dict((cast_spell_i.type_id, cast_spell_i) for cast_spell_i in cast_spell_list)
 
-    def get_cast_spell_by_type_id(self, type_id):
-        for cast_spell in self.cast_spells:
-            if cast_spell.type_id == type_id:
-                return cast_spell
-        return None
+    def get_cast_spell_by_type(self, type):
+        return self.cast_spell[type]
 
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
-        self.player.deck = [self._get_base_unit_by_id(deck_type_id) for deck_type_id in msg["deck"]]
-        self.player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
+        self.player.deck = [self.base_units[deck["typeId"]] for deck in msg["deck"]]
+        self.player.hand = [self.base_units[hand["typeId"]] for hand in msg["hand"]]
         self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
@@ -245,17 +233,11 @@ class World(ABC):
         for p in self.players:
             paths = self.get_paths_from_player(p.player_id)
             for i in range(len(paths)):
-                self.shortest_path.update({p.player_id: path_count(paths[i])})
+                self.shortest_path.update({p.player_id:path_count(paths[i])})
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-
-    def choose_deck(self, type_ids=None, base_units=None):
-        message = Message(type="pick", turn=self.get_current_turn(), info=None)
-        if type_ids is not None:
-            message.info = {"units" : type_ids}
-        elif base_units is not None:
-            message.info = {"units": [unit.type_id for unit in base_units]}
-        self.queue.put(message)
+    def choose_deck(self, type_ids):
+        pass
 
     def get_my_id(self):
         pass
@@ -342,7 +324,7 @@ class World(ABC):
         # return the number of turns passed
 
     def get_current_turn(self):
-        return self.current_turn
+        pass
 
         # return the limit of turns
 
