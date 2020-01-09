@@ -2,7 +2,7 @@ import time
 from abc import ABC
 
 from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell, Unit
+    CastAreaSpell, CastUnitSpell, Unit, Spell
 
 
 #################### Soalat?
@@ -28,7 +28,7 @@ class World(ABC):
         self.player_friend = None
         self.player_first_enemy = None
         self.player_second_enemy = None
-
+        self.spells = None
         self.cast_spell = None
 
         if world is not None:
@@ -101,21 +101,29 @@ class World(ABC):
         return None
 
     def _base_unit_init(self, msg):
-        self.base_units = dict([(b_unit["typeId"], BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
-                                                            base_attack=b_unit["baseAttack"],
-                                                            base_range=b_unit["baseRange"], target=b_unit["target"],
-                                                            is_flying=b_unit["isFlying"],
-                                                            is_multiple=b_unit["isMultiple"]))
-                                for b_unit in msg])
+        self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
+                                    base_attack=b_unit["baseAttack"],
+                                    base_range=b_unit["baseRange"],
+                                    target=b_unit["target"],
+                                    is_flying=b_unit["isFlying"],
+                                    is_multiple=b_unit["isMultiple"])
+                           for b_unit in msg]
+
+    def _get_base_unit_by_id(self, type_id):
+        for base_unit in self.base_units:
+            if base_unit.type_id == type_id:
+                return base_unit
+        return None
 
     def _spells_init(self, msg):
-        for spell in msg:
-            if msg["isAreaSpell"]:
-                self.area_spells.append(AreaSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"],
-                                                  range=spell["range"], power=spell["power"],
-                                                  is_damaging=spell["isDamaging"]))
-            else:
-                self.unit_spells.append(UnitSpell(type_id=spell["typeId"], turn_effect=spell["turnEffect"]))
+        self.spells = [Spell(type=spell["type"],
+                             type_id=spell["typeId"],
+                             duration=spell["duration"],
+                             priority=spell["priority"],
+                             range=spell["range"],
+                             power=spell["power"],
+                             target=spell["target"])
+                       for spell in msg]
 
     def _handle_init_message(self, msg):
         # if World.DEBUGGING_MODE:
@@ -129,8 +137,9 @@ class World(ABC):
 
     def _handle_turn_kings(self, msg):
         for king_msg in msg:
-            hp = king_msg["hp"] if king_msg["hp"] >= 0 else -1
+            hp = king_msg["hp"] if king_msg["hp"] > 0 else -1
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
+            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"]
 
     def _handle_turn_units(self, msg):
         self.map.clear_units()
@@ -153,7 +162,9 @@ class World(ABC):
                         active_poisons=unit_msg["activePoisons"],
                         range=unit_msg("range"),
                         attack=unit_msg("attack"),
-                        was_played_this_turn=unit_msg("wasPlayedThisTurn"))
+                        was_played_this_turn=unit_msg("wasPlayedThisTurn"),
+                        target_id=unit_msg["target"],
+                        target_cell=Cell(row=unit_msg["targetCell"]["row"], col=unit_msg["targetCell"]["col"]))
             self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
             player.units.append(unit)
 
@@ -163,8 +174,8 @@ class World(ABC):
             cast_spell = self.get_spell_by_type_id(cast_spell_msg["typeId"])
             cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
             affected_units = [self.get_unit_by_id(affected_unit_id) for
-                                                  affected_unit_id in
-                                                  cast_spell_msg["affectedUnits"]]
+                              affected_unit_id in
+                              cast_spell_msg["affectedUnits"]]
             if cast_spell.is_area_spell():
                 cast_spell_list.append(
                     CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell,
@@ -185,8 +196,8 @@ class World(ABC):
 
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
-        self.player.deck = [self.base_units[deck["typeId"]] for deck in msg["deck"]]
-        self.player.hand = [self.base_units[hand["typeId"]] for hand in msg["hand"]]
+        self.player.deck = [self._get_base_unit_by_id(deck_type_id) for deck_type_id in msg["deck"]]
+        self.player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
         self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
