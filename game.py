@@ -341,7 +341,7 @@ class Game(World):
             unit_id = unit.unit_id
         unit = self.get_unit_by_id(unit_id)
         for p in self.players:
-            if unit_id.target_id == p.player_id:
+            if unit.target_id == p.player_id:
                 return p.player_id
         return -1
 
