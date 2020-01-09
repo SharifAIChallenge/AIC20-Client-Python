@@ -29,7 +29,7 @@ class World(ABC):
         self.player_first_enemy = None
         self.player_second_enemy = None
         self.spells = None
-        self.cast_spell = None
+        self.cast_spells = None
 
         if world is not None:
             self.game_constants = world.game_constants
@@ -47,7 +47,7 @@ class World(ABC):
             self.player_friend = world.player_friend
             self.player_first_enemy = world.player_first_enemy
             self.player_second_enemy = world.player_second_enemy
-            self.cast_spell = world.cast_spell
+            self.cast_spells = world.cast_spells
         else:
             self.queue = queue
 
@@ -169,7 +169,7 @@ class World(ABC):
             player.units.append(unit)
 
     def _handle_turn_cast_spells(self, msg):
-        cast_spell_list = []
+        self.cast_spells = []
         for cast_spell_msg in msg:
             cast_spell = self.get_spell_by_type_id(cast_spell_msg["typeId"])
             cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
@@ -177,22 +177,24 @@ class World(ABC):
                               affected_unit_id in
                               cast_spell_msg["affectedUnits"]]
             if cast_spell.is_area_spell():
-                cast_spell_list.append(
-                    CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell,
+                self.cast_spells.append(
+                    CastAreaSpell(type_id=cast_spell.type_id, caster_id=cast_spell_msg["casterId"], center=cell,
                                   was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
                                   remaining_turns=cast_spell_msg["remainingTurns"],
                                   affected_units=affected_units))
             elif cast_spell.is_unit_spell():
-                cast_spell_list.append(CastUnitSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"],
+                self.cast_spells.append(CastUnitSpell(type_id=cast_spell.type_id, caster_id=cast_spell_msg["casterId"],
                                                      target_cell=cell, unit_id=cast_spell_msg["unitId"],
                                                      path_id=cast_spell_msg["pathId"],
                                                      was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
                                                      remaining_turns=cast_spell_msg["remainingTurns"],
                                                      affected_units=affected_units))
-        self.cast_spell = dict((cast_spell_i.type_id, cast_spell_i) for cast_spell_i in cast_spell_list)
 
-    def get_cast_spell_by_type(self, type):
-        return self.cast_spell[type]
+    def get_cast_spell_by_type_id(self, type_id):
+        for cast_spell in self.cast_spells:
+            if cast_spell.type_id == type_id:
+                return cast_spell
+        return None
 
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
