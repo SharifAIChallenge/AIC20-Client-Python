@@ -153,6 +153,7 @@ class World(ABC):
             unit_id = unit_msg["unitId"]
             player = self.get_player_by_id(player_id=unit_msg["playerId"])
             base_unit = self.base_units[unit_msg["typeId"]]
+
             unit = Unit(unit_id=unit_id, base_unit=base_unit,
                         cell=self.map.get_cell(unit_msg["cell"]["row"], unit_msg["cell"]["col"]),
                         path=self.map.get_path_by_id(unit_msg["pathId"]),
@@ -166,7 +167,9 @@ class World(ABC):
                         active_poisons=unit_msg["activePoisons"],
                         range=unit_msg("range"),
                         attack=unit_msg("attack"),
-                        was_played_this_turn=unit_msg("wasPlayedThisTurn"))
+                        was_played_this_turn=unit_msg("wasPlayedThisTurn"),
+                        target_id=unit_msg["target"],
+                        target_cell=Cell(row=unit_msg["targetCell"]["row"], col=unit_msg["targetCell"]["col"]))
             self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
             player.units.append(unit)
 
