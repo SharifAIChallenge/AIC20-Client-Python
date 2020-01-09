@@ -1,5 +1,3 @@
-
-
 class Map:
     def __init__(self, row_count, column_count, paths, kings):
         self.row_count = row_count
@@ -11,7 +9,6 @@ class Map:
 
     def get_cell(self, row, column):
         return self._cells[row][column]
-
 
     def clear_units(self):
         for row in self._cells:
@@ -27,6 +24,7 @@ class Map:
     def add_unit_in_cell(self, row, column, unit):
         self._cells[row][column].add_unit(unit)
 
+
 class Player:
     def __init__(self, player_id, king):
         self.player_id = player_id
@@ -41,7 +39,8 @@ class Player:
 
 class Unit:
     def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, is_clone, damage_level,
-                 range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons, was_played_this_turn):
+                 range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons,
+                 was_played_this_turn):
         self.unit_id = unit_id
         self.base_unit = base_unit
         self.cell = cell
@@ -57,6 +56,7 @@ class Unit:
         self.attack = attack
         self.active_poisons = active_poisons
         self.was_played_this_turn = was_played_this_turn
+
 
 class Spell:
     def __init__(self, type_id, turn_effect):
@@ -121,7 +121,6 @@ class AreaSpell(Spell):
         super().__init__(type_id=type_id, turn_effect=turn_effect)
         self.range = range
         self.power = power
-        self.is_damaging = is_damaging
 
 
 class UnitSpell(Spell):
