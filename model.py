@@ -43,7 +43,7 @@ class Player:
 class Unit:
     def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, is_clone, damage_level,
                  range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons,
-                 was_played_this_turn):
+                 was_played_this_turn, target, target_cell):
         self.unit_id = unit_id
         self.base_unit = base_unit
         self.cell = cell
@@ -59,8 +59,8 @@ class Unit:
         self.attack = attack
         self.active_poisons = active_poisons
         self.was_played_this_turn = was_played_this_turn
-        self.target = None
-        self.target_cell = None
+        self.target = target
+        self.target_cell = target_cell
 
 
 
@@ -153,12 +153,13 @@ class BaseUnit:
 
 
 class King:
-    def __init__(self, center=None, hp=0, attack=0, range=0):
+    def __init__(self, target, center=None, hp=0, attack=0, range=0):
         self.center = center
         self.hp = hp
         self.level = 0
         self.attack = attack
         self.range = range
+        self.target = target
 
 #
 # class AreaSpell(Spell):

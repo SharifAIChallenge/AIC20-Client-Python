@@ -41,8 +41,6 @@ class World(ABC):
             self.base_units = world.base_units
             self.spells = world.spells
             self.current_turn = world.current_turn
-            self.received_spell = world.received_spell
-            self.friend_received_spell = world.friend_received_spell
 
             self.shortest_path = dict()
             self.players = world.players
@@ -88,7 +86,7 @@ class World(ABC):
     def _map_init(self, map_msg):
         row_num = map_msg["rows"]
         col_num = map_msg["cols"]
-        paths = [Path(path["id"], [Cell(cell["row"], cell["column"]) for cell in path["cells"]]
+        paths = [Path(path["id"], [Cell(cell["row"], cell["col"]) for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
         kings = [King(center=Cell(king["center"]["row"], king["center"]["col"]), hp=king["hp"],
                       attack=king["attack"], range=king["range"])
@@ -107,12 +105,19 @@ class World(ABC):
         return None
 
     def _base_unit_init(self, msg):
-        self.base_units = dict([(b_unit["typeId"], BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
+        self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
                                                             base_attack=b_unit["baseAttack"],
-                                                            base_range=b_unit["baseRange"], target=b_unit["target"],
+                                                            base_range=b_unit["baseRange"],
+                                                            target=b_unit["target"],
                                                             is_flying=b_unit["isFlying"],
-                                                            is_multiple=b_unit["isMultiple"]))
-                                for b_unit in msg])
+                                                            is_multiple=b_unit["isMultiple"])
+                                for b_unit in msg]
+
+    def _get_base_unit_by_id(self, type_id):
+        for base_unit in self.base_units:
+            if base_unit.type_id == type_id:
+                return base_unit
+        return None
 
     def _spells_init(self, msg):
         self.spells = [Spell(type=spell["type"],
@@ -136,8 +141,9 @@ class World(ABC):
 
     def _handle_turn_kings(self, msg):
         for king_msg in msg:
-            hp = king_msg["hp"] if king_msg["hp"] >= 0 else -1
+            hp = king_msg["hp"] if king_msg["hp"] > 0 else -1
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
+            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"]
 
     def _handle_turn_units(self, msg):
         self.map.clear_units()
@@ -188,8 +194,8 @@ class World(ABC):
 
     def _handle_turn_message(self, msg):
         self.current_turn = msg['currTurn']
-        self.player.deck = [self.base_units[deck["typeId"]] for deck in msg["deck"]]
-        self.player.hand = [self.base_units[hand["typeId"]] for hand in msg["hand"]]
+        self.player.deck = [self._get_base_unit_by_id(deck_type_id) for deck_type_id in msg["deck"]]
+        self.player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
         self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
