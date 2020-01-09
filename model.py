@@ -13,7 +13,6 @@ class Map:
     def get_cell(self, row, column):
         return self._cells[row][column]
 
-
     def clear_units(self):
         for row in self._cells:
             for cell in row:
@@ -27,6 +26,7 @@ class Map:
 
     def add_unit_in_cell(self, row, column, unit):
         self._cells[row][column].add_unit(unit)
+
 
 class Player:
     def __init__(self, player_id, king):
@@ -63,11 +63,11 @@ class Unit:
         self.target_cell = target_cell
 
 
-
 class SpellTarget(Enum):
     SELF = 1
     ALLIED = 2
     ENEMY = 3
+
     @staticmethod
     def get_value(string):
         if string == "SELF":
@@ -78,11 +78,13 @@ class SpellTarget(Enum):
             return SpellTarget.ENEMY
         return None
 
+
 class SpellType(Enum):
     HP = 1
     TELE = 2
     DUPLICATE = 3
     HASTE = 4
+
     @staticmethod
     def get_value(string):
         if string == "HP":
@@ -105,8 +107,6 @@ class Spell:
         self.range = range
         self.power = power
         self.target = SpellTarget.get_value(target)
-
-
 
 
 class Cell:
@@ -156,9 +156,11 @@ class King:
     def __init__(self, target_id, center=None, hp=0, attack=0, range=0):
         self.center = center
         self.hp = hp
+        self.level = 0
         self.attack = attack
         self.range = range
         self.target_id = target_id
+
 
 #
 # class AreaSpell(Spell):
@@ -255,7 +257,7 @@ class TurnUpdates:
         self.got_damage_upgrade = got_damage_upgrade
         self.available_damage_upgrade = available_damage_upgrades
         self.available_range_upgrade = available_range_upgrades
-        if turn_updates != None:
+        if turn_updates is not None:
             self.received_spell = turn_updates.received_spell
             self.friend_received_spell = turn_updates.friend_received_spell
             self.got_range_upgrade = turn_updates.got_range_upgrade

@@ -23,7 +23,7 @@ class Controller:
         self.argDefaults = ["127.0.0.1", 7099, "00000000000000000000000000000000", "1000"]
         self.turn_num = 0
 
-    #change with switcher
+    # change with switcher
     def handle_message(self, message):
         print("got message")
         if message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
@@ -61,6 +61,7 @@ class Controller:
                 if World.DEBUGGING_MODE and World.LOG_FILE_POINTER is not None:
                     World.LOG_FILE_POINTER.write('------send message to server-----\n ' + message.__str__())
                 self.network.send(message)
+
         Thread(target=run, daemon=True).start()
 
     def read_settings(self):
@@ -79,6 +80,7 @@ class Controller:
         print("finished!")
         self.network.close()
         self.sending_flag = False
+
 
 if __name__ == '__main__':
     c = Controller()

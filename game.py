@@ -305,29 +305,51 @@ class Game(World):
         return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.was_played_this_turn]
 
     def get_unit_target(self, unit=None, unit_id=None):
-        player = self.get_player_by_id(self.get_my_id())
-        units = player.units
-        for unit in units:
-            pass
+        if unit_id is None:
+            if unit is None:
+                return None
+            unit_id = unit.unit_id
+
+        target_id = self.get_unit_by_id(unit_id).target_id
+        unit = self.get_unit_by_id(target_id)
+        return unit
 
     def get_unit_target_cell(self, unit=None, unit_id=None):
-        pass
+        if unit_id is None:
+            if unit is None:
+                return None
+            unit_id = unit.unit_id
+
+        target_id = self.get_unit_by_id(unit_id).target_id
+        cell = self.get_unit_by_id(unit_id).target_cell
+        unit = self.get_unit_by_id(target_id)
+        if unit is None:
+            return None
+
+        return cell
 
     def get_king_target(self, player_id):
-        pass
+        king = self.get_player_by_id(player_id).king
+        return self.get_unit_by_id(king.target_id)
 
     def get_king_target_cell(self, player_id):
-        pass
+        king = self.get_player_by_id(player_id).king
+        return king.target_cell
 
     def get_king_unit_is_attacking_to(self, unit=None, unit_id=None):
         if unit is not None:
             unit_id = unit.unit_id
+        unit = self.get_unit_by_id(unit_id)
+        for p in self.players:
+            if unit_id.target_id == p.player_id:
+                return p.player_id
+        return -1
 
     def get_all_base_unit(self):
         return copy.deepcopy(self.base_units)
 
     def get_all_spells(self):
-        return copy.deepcopy(self.area_spells + self.unit_spells)
+        return copy.deepcopy(self.spells)
 
 # def get_player_clone_units(self, player_id):
 #     return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_clone > 0]
