@@ -8,17 +8,14 @@ class Game(World):
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
 
     def choose_deck(self, type_ids=None, base_units=None):
-        if type_ids is None:
-            if base_units is None:
-                return
-            type_ids = []
-            for u in base_units:
-                type_ids.append(u.type_id)
-
-        for t in type_ids:
-            base_unit = self.base_units.get(t, None)
-            if base_unit is not None:
-                self.player.deck.units.append(base_unit)
+        print("----------GI---------------")
+        message = Message(type="pick", turn=self.get_current_turn(), info=None)
+        if type_ids is not None:
+            message.info = {"units" : type_ids}
+        elif base_units is not None:
+            message.info = {"units": [unit.type_id for unit in base_units]}
+        print(message.__dict__)
+        return message
 
     def get_my_id(self):
         return self.player.player_id

@@ -2,7 +2,7 @@ import time
 from abc import ABC
 
 from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell, Unit, Spell
+    CastAreaSpell, CastUnitSpell, Unit, Spell, Message
 
 
 #################### Soalat?
@@ -48,6 +48,8 @@ class World(ABC):
             self.player_first_enemy = world.player_first_enemy
             self.player_second_enemy = world.player_second_enemy
             self.cast_spells = world.cast_spells
+
+            self.queue = world.queue
         else:
             self.queue = queue
 
@@ -246,8 +248,14 @@ class World(ABC):
                 self.shortest_path.update({p.player_id: path_count(paths[i])})
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-    def choose_deck(self, type_ids):
-        pass
+
+    def choose_deck(self, type_ids=None, base_units=None):
+        message = Message(type="pick", turn=self.get_current_turn(), info=None)
+        if type_ids is not None:
+            message.info = {"units" : type_ids}
+        elif base_units is not None:
+            message.info = {"units": [unit.type_id for unit in base_units]}
+        self.queue.put(message)
 
     def get_my_id(self):
         pass
@@ -334,7 +342,7 @@ class World(ABC):
         # return the number of turns passed
 
     def get_current_turn(self):
-        pass
+        return self.current_turn
 
         # return the limit of turns
 
