@@ -56,6 +56,8 @@ class Unit:
         self.attack = attack
         self.active_poisons = active_poisons
         self.was_played_this_turn = was_played_this_turn
+        self.target = None
+        self.target_cell = None
 
 
 class Spell:

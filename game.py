@@ -292,16 +292,23 @@ class Game(World):
             }))
 
     def get_player_duplicate_unit(self, player_id):
-        pass
+        unit_list = []
+        for u in self.get_player_by_id(player_id).units:
+            if u.is_clone:
+                unit_list.append(u)
+        return unit_list
 
     def get_player_hasted_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.is_hasted > 0]
+        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.is_hasted > 0]
 
     def get_player_played_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id) if unit.was_played_this_turn]
+        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.was_played_this_turn]
 
     def get_unit_target(self, unit=None, unit_id=None):
-        pass
+        player = self.get_player_by_id(self.get_my_id())
+        units = player.units
+        for unit in units:
+            pass
 
     def get_unit_target_cell(self, unit=None, unit_id=None):
         pass
