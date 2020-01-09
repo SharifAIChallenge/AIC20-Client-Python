@@ -13,6 +13,7 @@ class Map:
     def get_cell(self, row, column):
         return self._cells[row][column]
 
+
     def clear_units(self):
         for row in self._cells:
             for cell in row:
@@ -63,11 +64,11 @@ class Unit:
         self.target_cell = target_cell
 
 
+
 class SpellTarget(Enum):
     SELF = 1
     ALLIED = 2
     ENEMY = 3
-
     @staticmethod
     def get_value(string):
         if string == "SELF":
@@ -78,13 +79,11 @@ class SpellTarget(Enum):
             return SpellTarget.ENEMY
         return None
 
-
 class SpellType(Enum):
     HP = 1
     TELE = 2
     DUPLICATE = 3
     HASTE = 4
-
     @staticmethod
     def get_value(string):
         if string == "HP":
@@ -107,6 +106,12 @@ class Spell:
         self.range = range
         self.power = power
         self.target = SpellTarget.get_value(target)
+
+    def is_unit_spell(self):
+        return self.type == SpellType.TELE
+
+    def is_area_spell(self):
+        return not self.is_unit_spell()
 
 
 class Cell:
@@ -156,11 +161,9 @@ class King:
     def __init__(self, target_id, center=None, hp=0, attack=0, range=0):
         self.center = center
         self.hp = hp
-        self.level = 0
         self.attack = attack
         self.range = range
         self.target_id = target_id
-
 
 #
 # class AreaSpell(Spell):
@@ -188,22 +191,32 @@ class Message:
 
 
 class CastSpell:
-    def __init__(self, type_id, caster_id):
+    def __init__(self, type_id, caster_id, remaining_turns, was_cast_this_turn, affected_units):
         self.type_id = type_id
         self.caster_id = caster_id
+        self.remaining_turns = remaining_turns
+        self.was_cast_this_turn = was_cast_this_turn
+        self.affected_units = affected_units
 
 
 class CastUnitSpell(CastSpell):
-    def __init__(self, type_id, caster_id, target_cell, unit_id, path_id):
-        super().__init__(type_id=type_id, caster_id=caster_id)
+    def __init__(self, type_id, caster_id, remaining_turns, was_cast_this_turn, affected_units
+                 , target_cell, unit_id, path_id):
+        super().__init__(type_id=type_id, caster_id=caster_id,
+                         remaining_turns=remaining_turns,
+                         was_cast_this_turn=was_cast_this_turn,
+                         affected_units=affected_units)
         self.target_cell = target_cell
         self.unit_id = unit_id
         self.path_id = path_id
 
 
 class CastAreaSpell(CastSpell):
-    def __init__(self, type_id, caster_id, center, affected_units):
-        super().__init__(type_id=type_id, caster_id=caster_id)
+    def __init__(self, type_id, caster_id, remaining_turns, was_cast_this_turn, center, affected_units):
+        super().__init__(type_id=type_id, caster_id=caster_id,
+                         remaining_turns=remaining_turns,
+                         was_cast_this_turn=was_cast_this_turn,
+                         affected_units=affected_units)
         self.center = center
         self.affected_units = affected_units
 

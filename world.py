@@ -64,11 +64,8 @@ class World(ABC):
         return None
 
     def get_spell_by_type_id(self, type_id):
-        for spell in self.area_spells:
-            if spell.type == type_id:
-                return spell
-        for spell in self.unit_spells:
-            if spell.type == type_id:
+        for spell in self.spells:
+            if spell.type_id == type_id:
                 return spell
         return None
 
@@ -165,18 +162,22 @@ class World(ABC):
         for cast_spell_msg in msg:
             cast_spell = self.get_spell_by_type_id(cast_spell_msg["typeId"])
             cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
-            if isinstance(cast_spell, AreaSpell):
-                cast_spell_list.append(
-                    CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell,
-                                  affected_units=[self.get_unit_by_id(affected_unit_id) for
+            affected_units = [self.get_unit_by_id(affected_unit_id) for
                                                   affected_unit_id in
                                                   cast_spell_msg["affectedUnits"]]
-                                  ))
-            elif isinstance(cast_spell, UnitSpell):
+            if cast_spell.is_area_spell():
+                cast_spell_list.append(
+                    CastAreaSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"], center=cell,
+                                  was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
+                                  remaining_turns=cast_spell_msg["remainingTurns"],
+                                  affected_units=affected_units))
+            elif cast_spell.is_unit_spell():
                 cast_spell_list.append(CastUnitSpell(type_id=cast_spell.type, caster_id=cast_spell_msg["casterId"],
                                                      target_cell=cell, unit_id=cast_spell_msg["unitId"],
                                                      path_id=cast_spell_msg["pathId"],
-                                                     ))
+                                                     was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
+                                                     remaining_turns=cast_spell_msg["remainingTurns"],
+                                                     affected_units=affected_units))
         self.cast_spell = dict((cast_spell_i.type_id, cast_spell_i) for cast_spell_i in cast_spell_list)
 
     def get_cast_spell_by_type(self, type):
