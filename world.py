@@ -82,10 +82,10 @@ class World(ABC):
     def _map_init(self, map_msg):
         row_num = map_msg["rows"]
         col_num = map_msg["cols"]
-        paths = [Path(path["id"], [Cell(cell["row"], cell["column"]) for cell in path["cells"]]
+        paths = [Path(path["id"], [Cell(cell["row"], cell["col"]) for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
-        kings = [King(center=Cell(king["row"], king["col"]), hp=king["hp"],
-                      attack=king["attack"], range=king["range"])
+        kings = [King(center=Cell(king["center"]["row"], king["center"]["col"]), hp=king["hp"],
+                      attack=king["attack"], range=king["range"], target_id=-1)
                  for king in map_msg["kings"]]
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
         self.player = self.players[0]
