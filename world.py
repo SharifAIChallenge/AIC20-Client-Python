@@ -363,7 +363,7 @@ class World(ABC):
         if cell is None:
             if row is None or col is None:
                 return
-            cell = Cell(row, col)
+            cell = self.map.get_cell(row, col)
 
         shortest_path_to_cell = self.shortest_path.get(player_id)
         if shortest_path_to_cell[cell.row][cell.col] == -1:
