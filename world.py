@@ -85,9 +85,12 @@ class World(ABC):
     def _map_init(self, map_msg):
         row_num = map_msg["rows"]
         col_num = map_msg["cols"]
-        paths = [Path(path["id"], [Cell(cell["row"], cell["col"]) for cell in path["cells"]]
+
+        input_cells = [[Cell(row=row, col=col) for col in range(col_num)] for row in range(row_num)]
+
+        paths = [Path(path["id"], [input_cells[cell["row"]][cell["col"]] for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
-        kings = [King(center=Cell(king["center"]["row"], king["center"]["col"]), hp=king["hp"],
+        kings = [King(center=input_cells[king["center"]["row"]][king["center"]["col"]], hp=king["hp"],
                       attack=king["attack"], range=king["range"], target_id=-1)
                  for king in map_msg["kings"]]
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
@@ -95,7 +98,7 @@ class World(ABC):
         self.player_friend = self.players[1]
         self.player_first_enemy = self.players[2]
         self.player_second_enemy = self.players[3]
-        self.map = Map(row_count=row_num, column_count=col_num, paths=paths, kings=kings)
+        self.map = Map(row_count=row_num, column_count=col_num, paths=paths, kings=kings, cells=input_cells)
 
     def get_unit_by_id(self, unit_id):
         for unit in self.map.units:
@@ -308,7 +311,8 @@ class World(ABC):
     # returns the path from player_id to its friend beginning from player_id's fortress
     def get_path_to_friend(self, player_id):
         player_king_cell = self.get_player_position(player_id)
-        friend_king_cell = self.get_player_position(self.get_friend_by_id(player_id))
+        friend_king_cell = self.get_friend_by_id(player_id).king.center
+
         for p in self.map.paths:
             first_cell = p.cells[0]
             last_cell = p.cells[len(p.cells) - 1]
@@ -634,10 +638,3 @@ class World(ABC):
 
     def get_all_spells(self):
         return copy.deepcopy(self.spells)
-
-    def get_player_clone_units(self, player_id):
-        pass
-
-
-    def get_player_poisoned_units(self, player_id):
-        pass
