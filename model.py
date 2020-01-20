@@ -38,6 +38,7 @@ class Player:
         self.upgrade_tokens = 0
         self.king = king
         self.units = []
+        self.dead_units = []
 
     def __str__(self):
         return "<Player | " \

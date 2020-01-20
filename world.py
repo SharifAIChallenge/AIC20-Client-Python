@@ -147,10 +147,15 @@ class World(ABC):
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
             self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"]
 
-    def _handle_turn_units(self, msg):
-        self.map.clear_units()
-        for player in self.players:
-            player.units.clear()
+    def _handle_turn_units(self, msg, is_dead_unit=False):
+        if not is_dead_unit:
+            self.map.clear_units()
+            for player in self.players:
+                player.units.clear()
+        else:
+            for player in self.players:
+                player.dead_units.clear()
+
         for unit_msg in msg:
             unit_id = unit_msg["unitId"]
             player = self.get_player_by_id(player_id=unit_msg["playerId"])
@@ -171,8 +176,11 @@ class World(ABC):
                         was_played_this_turn=unit_msg("wasPlayedThisTurn"),
                         target_id=unit_msg["target"],
                         target_cell=Cell(row=unit_msg["targetCell"]["row"], col=unit_msg["targetCell"]["col"]))
-            self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
-            player.units.append(unit)
+            if not is_dead_unit:
+                self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
+                player.units.append(unit)
+            else:
+                player.dead_units.append(unit)
 
     def _handle_turn_cast_spells(self, msg):
         self.cast_spells = []
@@ -208,6 +216,7 @@ class World(ABC):
         self.player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
         self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg["units"])
+        self._handle_turn_units(msg["diedUnits"], is_dead_unit=True)
         self._handle_turn_cast_spells(msg["castSpells"])
 
         self.turn_updates = TurnUpdates(received_spell=msg["receivedSpell"],
