@@ -190,11 +190,11 @@ class World(ABC):
                                   affected_units=affected_units))
             elif cast_spell.is_unit_spell():
                 self.cast_spells.append(CastUnitSpell(type_id=cast_spell.type_id, caster_id=cast_spell_msg["casterId"],
-                                                     target_cell=cell, unit_id=cast_spell_msg["unitId"],
-                                                     path_id=cast_spell_msg["pathId"],
-                                                     was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
-                                                     remaining_turns=cast_spell_msg["remainingTurns"],
-                                                     affected_units=affected_units))
+                                                      target_cell=cell, unit_id=cast_spell_msg["unitId"],
+                                                      path_id=cast_spell_msg["pathId"],
+                                                      was_cast_this_turn=cast_spell_msg["wasCastThisTurn"],
+                                                      remaining_turns=cast_spell_msg["remainingTurns"],
+                                                      affected_units=affected_units))
 
     def get_cast_spell_by_type_id(self, type_id):
         for cast_spell in self.cast_spells:
@@ -256,7 +256,7 @@ class World(ABC):
     def choose_deck(self, type_ids=None, base_units=None):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
-            message.info = {"units" : type_ids}
+            message.info = {"units": type_ids}
         elif base_units is not None:
             message.info = {"units": [unit.type_id for unit in base_units]}
         self.queue.put(message)
@@ -329,7 +329,6 @@ class World(ABC):
         return self.map.column_count
         # return a list of paths crossing one cell
 
-
     # return a list of paths crossing one cell
     def get_paths_crossing_cell(self, cell=None, row=None, col=None):
         if cell is None:
@@ -397,11 +396,10 @@ class World(ABC):
         message = Message(turn=self.get_current_turn(),
                           type="putUnit",
                           info={
-                              "typeId" : type_id,
-                              "pathId" : path_id
+                              "typeId": type_id,
+                              "pathId": path_id
                           })
         self.queue.put(message)
-
 
     # return the number of turns passed
     def get_current_turn(self):
@@ -428,7 +426,6 @@ class World(ABC):
         player = self.get_player_by_id(player_id)
         return player.king.hp
 
-
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit_id, path_id, index, spell=None, spell_id=None):
         path = None
@@ -441,13 +438,13 @@ class World(ABC):
             spell = self.get_spell_by_type_id(spell_id)
         message = Message(type="castSpell", turn=self.get_current_turn(),
                           info={
-                              "typeId" : spell.type,
-                              "cell" : {
-                                  "row" : cell.row,
-                                  "col" : cell.col
+                              "typeId": spell.type,
+                              "cell": {
+                                  "row": cell.row,
+                                  "col": cell.col
                               },
-                              "unitId" : unit_id,
-                              "pathId" : path_id
+                              "unitId": unit_id,
+                              "pathId": path_id
                           })
         self.queue.put(message)
 
@@ -462,17 +459,45 @@ class World(ABC):
             message = Message(type="castSpell",
                               turn=self.get_current_turn(),
                               info={
-                                  "typeId" : spell.type,
-                                  "cell" : {
-                                      "row" : center.row,
-                                      "col" : center.col
+                                  "typeId": spell.type,
+                                  "cell": {
+                                      "row": center.row,
+                                      "col": center.col
                                   },
-                                  "unitId" : -1,
-                                  "pathId" : -1
+                                  "unitId": -1,
+                                  "pathId": -1
                               })
             self.queue.put(message)
 
     # returns a list of units the spell casts effects on
+    def get_area_spell_targets(self, center, row=None, col=None, spell=None, type_id=None):
+        if spell is None:
+            if type_id is not None:
+                spell = self.get_cast_spell_by_type_id(type_id)
+        if not spell.is_area_spell:
+            return []
+        if center is None:
+            center = Cell(row, col)
+        ls = []
+        for i in range(max(0, center.row - spell.range), min(center.row + spell.range, self.map.row_count)):
+            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self.map.column_count)):
+                cell = self.map.get_cell(i, j)
+                for u in cell.units:
+                    if self._is_unit_targeted(u, spell.target):
+                        ls.append(u)
+
+    def _is_unit_targeted(self, unit, spell_target):
+        if spell_target == 1:
+            if unit in self.player.units:
+                return True
+        elif spell_target == 2:
+            if unit in self.player_friend or unit in self.player.units:
+                return True
+        elif spell_target == 3:
+            if unit in self.player_first_enemy or unit in self.player_second_enemy:
+                return True
+        return False
+
     #
     #
     #
@@ -482,25 +507,8 @@ class World(ABC):
     #
     #
     #
-    def get_area_spell_targets(self, center, row=None, col=None, spell=None, spell_id=None):
-        if spell is None:
-            if spell_id is not None:
-                spell = self.get_cast_spell_by_type(spell_id)
-        if center is not None:
-            pass
-
     def get_cast_spells_on_unit(self, unit=None, unit_id=None):
         pass
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
@@ -584,7 +592,6 @@ class World(ABC):
             if u.is_clone:
                 unit_list.append(u)
         return unit_list
-
 
     def get_player_hasted_units(self, player_id):
         return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.is_hasted > 0]

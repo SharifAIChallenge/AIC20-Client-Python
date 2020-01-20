@@ -27,7 +27,7 @@ class Network:
                 connected = True
                 self.send(Message(type=ServerConstants.CONFIG_KEY_TOKEN,
                                   turn=0,
-                                  info={ServerConstants.CONFIG_KEY_TOKEN:self.token}
+                                  info={ServerConstants.CONFIG_KEY_TOKEN: self.token}
                                   ))
                 init = self.receive()
                 if init[ServerConstants.KEY_TYPE] == "wrong token":

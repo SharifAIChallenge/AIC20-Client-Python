@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import threading
@@ -63,7 +62,6 @@ class Controller:
                 if World.DEBUGGING_MODE and World.LOG_FILE_POINTER is not None:
                     World.LOG_FILE_POINTER.write('------send message to server-----\n ' + message.__str__())
                 self.network.send(message)
-
 
         Thread(target=run, daemon=True).start()
 

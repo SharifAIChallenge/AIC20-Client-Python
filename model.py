@@ -83,6 +83,7 @@ class SpellTarget(Enum):
             return SpellTarget.ENEMY
         return None
 
+
 class SpellType(Enum):
     HP = 1
     TELE = 2
