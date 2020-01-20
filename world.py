@@ -669,10 +669,14 @@ class World(ABC):
         return None
 
     def get_player_died_units(self, player_id):
-        pass
+        return self.get_player_by_id(player_id).dead_units
 
     def has_player_used_ranged_upgrade(self, player_id):
-        pass
+        if self.turn_updates.got_range_upgrade is not None:
+            return True
+        return False
 
     def has_player_used_damage_upgrade(self, player_id):
-        pass
+        if self.turn_updates.got_damage_upgrade is not None:
+            return True
+        return False
