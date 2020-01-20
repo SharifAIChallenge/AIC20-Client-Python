@@ -645,3 +645,25 @@ class World(ABC):
 
     def get_all_spells(self):
         return copy.deepcopy(self.spells)
+
+    def get_spell_by_id(self, spell_id):
+        for i in self.spells:
+            if spell_id == i.type_id:
+                return i
+
+        return None
+
+    def get_base_unit_by_id(self, type_id):
+        for bu in self.base_units:
+            if bu.type_id == type_id:
+                return bu
+        return None
+
+    def get_player_died_units(self, player_id):
+        pass
+
+    def has_player_used_ranged_upgrade(self, player_id):
+        pass
+
+    def has_player_used_damage_upgrade(self, player_id):
+        pass
