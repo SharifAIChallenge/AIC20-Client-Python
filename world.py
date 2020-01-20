@@ -216,7 +216,7 @@ class World(ABC):
         self.player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
         self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg["units"])
-        self._handle_turn_units(msg["diedUnits"], is_dead_unit=True)
+        # self._handle_turn_units(msg["diedUnits"], is_dead_unit=True)
         self._handle_turn_cast_spells(msg["castSpells"])
 
         self.turn_updates = TurnUpdates(received_spell=msg["receivedSpell"],
@@ -231,14 +231,14 @@ class World(ABC):
 
         self.start_time = self.get_current_time_millis()
 
-    def pre_process_shortest_path(self):
+    def _pre_process_shortest_path(self):
         def path_count(path):
             shortest_path_to_cell = []
             shortest_path_to_cell_num = []
-            for i in range(len(self.map.row_count)):
+            for i in range(self.map.row_count):
                 l = []
                 s = []
-                for j in range(len(self.map.column_count)):
+                for j in range(self.map.column_count):
                     l.append(-1)
                     s.append(-1)
                 shortest_path_to_cell.append(l)
@@ -368,14 +368,20 @@ class World(ABC):
     # this path is in the available path list
     # path may cross from friend
     def get_shortest_path_to_cell(self, player_id, cell=None, row=None, col=None):
+        if len(list(self.shortest_path.values())) == 0:
+            self._pre_process_shortest_path()
+
         if cell is None:
             if row is None or col is None:
                 return
             cell = self.map.get_cell(row, col)
 
         shortest_path_to_cell = self.shortest_path.get(player_id)
+        print(shortest_path_to_cell)
+
         if shortest_path_to_cell[cell.row][cell.col] == -1:
             return None
+
         return shortest_path_to_cell[cell.row][cell.col]
 
     # returns the limit of ap for each player
@@ -507,17 +513,15 @@ class World(ABC):
                 return True
         return False
 
-    #
-    #
-    #
-    #
-    # NOT COMPLETE:
-    #
-    #
-    #
-    #
     def get_cast_spells_on_unit(self, unit=None, unit_id=None):
-        pass
+        ls = []
+        if unit_id is None:
+            unit_id = unit.unit_id
+        for cast_spell in self.cast_spells:
+            if cast_spell is isinstance(CastUnitSpell):
+                if unit_id == cast_spell.unit_id:
+                    ls.append(unit_id)
+        return ls
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
