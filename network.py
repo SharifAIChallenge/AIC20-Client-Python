@@ -27,7 +27,7 @@ class Network:
                 connected = True
                 self.send(Message(type=ServerConstants.CONFIG_KEY_TOKEN,
                                   turn=0,
-                                  info={ServerConstants.CONFIG_KEY_TOKEN:self.token}
+                                  info={ServerConstants.CONFIG_KEY_TOKEN: self.token}
                                   ))
                 init = self.receive()
                 if init[ServerConstants.KEY_TYPE] == "wrong token":
@@ -53,7 +53,6 @@ class Network:
 
     def receive(self):
         while self.receive_flag:
-            # print("received")
             self.result += self.s.recv(1024)
             if b'\x00' in self.result:
                 ans = json.loads(self.result[:self.result.index(b'\x00')].decode('UTF-8'))

@@ -2,20 +2,19 @@ from enum import Enum
 
 
 class Map:
-    def __init__(self, row_count, column_count, paths, kings):
+    def __init__(self, row_count, column_count, paths, kings, cells):
         self.row_count = row_count
         self.column_count = column_count
         self.paths = paths
         self.units = []
         self.kings = kings
-        self._cells = [[Cell(row=row, col=col) for col in range(column_count)] for row in range(row_count)]
+        self.cells = cells
 
     def get_cell(self, row, column):
-        return self._cells[row][column]
-
+        return self.cells[row][column]
 
     def clear_units(self):
-        for row in self._cells:
+        for row in self.cells:
             for cell in row:
                 cell.clear_units()
 
@@ -26,7 +25,7 @@ class Map:
         return None
 
     def add_unit_in_cell(self, row, column, unit):
-        self._cells[row][column].add_unit(unit)
+        self.cells[row][column].add_unit(unit)
 
 
 class Player:
@@ -39,6 +38,12 @@ class Player:
         self.upgrade_tokens = 0
         self.king = king
         self.units = []
+        self.dead_units = []
+
+    def __str__(self):
+        return "<Player | " \
+               "player id : {} | " \
+               "king located at ({}, {})>".format(self.player_id, self.king.center.row, self.king.center.col)
 
 
 class Unit:
@@ -64,11 +69,11 @@ class Unit:
         self.target_cell = target_cell
 
 
-
 class SpellTarget(Enum):
     SELF = 1
     ALLIED = 2
     ENEMY = 3
+
     @staticmethod
     def get_value(string):
         if string == "SELF":
@@ -79,11 +84,13 @@ class SpellTarget(Enum):
             return SpellTarget.ENEMY
         return None
 
+
 class SpellType(Enum):
     HP = 1
     TELE = 2
     DUPLICATE = 3
     HASTE = 4
+
     @staticmethod
     def get_value(string):
         if string == "HP":
@@ -126,6 +133,9 @@ class Cell:
 
         return self.col == other.col and self.row == other.row
 
+    def __str__(self):
+        return "<Cell | ({}, {})>".format(self.row, self.col)
+
     def clear_units(self):
         self.units.clear()
 
@@ -139,6 +149,11 @@ class Path:
             cells = []
         self.cells = cells
         self.path_id = path_id
+
+    def __str__(self):
+        return "<Path | " \
+               "path id : {} | " \
+               "cells: {}>".format(self.path_id, ["({}, {})".format(cell.row, cell.col) for cell in self.cells])
 
 
 class Deck:
@@ -165,29 +180,12 @@ class King:
         self.range = range
         self.target_id = target_id
 
-#
-# class AreaSpell(Spell):
-#     def __init__(self, type_id, turn_effect, range, power, is_damaging):
-#         super().__init__(type_id=type_id, turn_effect=turn_effect)
-#         self.range = range
-#         self.power = power
-#         self.is_damaging = is_damaging
-#
-#
-# class UnitSpell(Spell):
-#     def __init__(self, type_id, turn_effect):
-#         super().__init__(type_id=type_id, turn_effect=turn_effect)
-#
 
 class Message:
-
     def __init__(self, turn, type, info):
         self.type = type
         self.info = info
         self.turn = turn
-    #
-    # def add_arg(self, arg):
-    #     self.args.append(arg)
 
 
 class CastSpell:
