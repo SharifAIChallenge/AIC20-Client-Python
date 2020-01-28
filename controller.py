@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import threading
@@ -26,7 +25,6 @@ class Controller:
 
     # change with switcher
     def handle_message(self, message):
-        print("got message")
         if message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_INIT:
             self.world._handle_init_message(message[ServerConstants.KEY_INFO])
             new_world = World(world=self.world)
@@ -64,7 +62,6 @@ class Controller:
                 if World.DEBUGGING_MODE and World.LOG_FILE_POINTER is not None:
                     World.LOG_FILE_POINTER.write('------send message to server-----\n ' + message.__str__())
                 self.network.send(message)
-
 
         Thread(target=run, daemon=True).start()
 
