@@ -358,8 +358,8 @@ class World(ABC):
 
     # return a list of units in a cell
     def get_cell_units(self, cell=None, row=None, col=None):
-        if cell == None:
-            if row == None and col == None:
+        if cell is None:
+            if row is None and col is None:
                 return None
             cell = self.map.get_cell(row, col)
         return cell.units
@@ -674,11 +674,19 @@ class World(ABC):
         return self.get_player_by_id(player_id).dead_units
 
     def has_player_used_ranged_upgrade(self, player_id):
-        if self.turn_updates.got_range_upgrade is not None:
-            return True
+        for u in self.get_player_by_id(player_id).dead_units:
+            if u.was_range_upgraded:
+                return True
+        for u in self.get_player_by_id(player_id).units:
+            if u.was_range_upgraded:
+                return True
         return False
 
     def has_player_used_damage_upgrade(self, player_id):
-        if self.turn_updates.got_damage_upgrade is not None:
-            return True
+        for u in self.get_player_by_id(player_id).dead_units:
+            if u.was_damage_upgraded:
+                return True
+        for u in self.get_player_by_id(player_id).units:
+            if u.was_damage_upgraded:
+                return True
         return False
