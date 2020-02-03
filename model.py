@@ -135,12 +135,15 @@ class UnitTarget(Enum):
 
 
 class Spell:
-    def __init__(self, type, type_id, duration, priority, target):
-        self.type = SpellType.get_value(type)
+    def __init__(self, type, type_id, duration, priority, target, range, power, is_damaging):
+        self.type = type
         self.type_id = type_id
         self.duration = duration
         self.priority = priority
-        self.target = SpellTarget.get_value(target)
+        self.target = target
+        self.range = range
+        self.power = power
+        self.is_damaging = is_damaging
 
     def is_unit_spell(self):
         return self.type == SpellType.TELE
@@ -222,34 +225,29 @@ class Message:
 
 
 class CastSpell:
-    def __init__(self, type_id, caster_id, remaining_turns, was_cast_this_turn, affected_units):
-        self.type_id = type_id
+    def __init__(self, spell, id, caster_id, cell, affected_units):
+        self.spell = spell
+        self.id = id
         self.caster_id = caster_id
-        self.remaining_turns = remaining_turns
-        self.was_cast_this_turn = was_cast_this_turn
+        self.cell = cell
         self.affected_units = affected_units
 
 
 class CastUnitSpell(CastSpell):
-    def __init__(self, type_id, caster_id, remaining_turns, was_cast_this_turn, affected_units
-                 , target_cell, unit_id, path_id):
-        super().__init__(type_id=type_id, caster_id=caster_id,
-                         remaining_turns=remaining_turns,
-                         was_cast_this_turn=was_cast_this_turn,
-                         affected_units=affected_units)
-        self.target_cell = target_cell
-        self.unit_id = unit_id
-        self.path_id = path_id
+    def __init__(self, spell, id, caster_id, cell, affected_units
+                 , unit, path):
+        super().__init__(spell=spell, id=id, caster_id=caster_id,
+                         cell=cell, affected_units=affected_units)
+        self.unit = unit
+        self.path = path
 
 
 class CastAreaSpell(CastSpell):
-    def __init__(self, type_id, caster_id, remaining_turns, was_cast_this_turn, center, affected_units):
-        super().__init__(type_id=type_id, caster_id=caster_id,
-                         remaining_turns=remaining_turns,
-                         was_cast_this_turn=was_cast_this_turn,
-                         affected_units=affected_units)
-        self.center = center
-        self.affected_units = affected_units
+    def __init__(self, spell, id, caster_id, cell, affected_units,
+                 remaining_turns):
+        super().__init__(spell=spell, id=id, caster_id=caster_id,
+                         cell=cell, affected_units=affected_units)
+        self.ramaining_turns = remaining_turns
 
 
 class ServerConstants:
@@ -276,7 +274,8 @@ class ServerConstants:
 
 class GameConstants:
     def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
-                 turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition):
+                 turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition,
+                 deck_size, hand_size):
         self.max_ap = max_ap
         self.max_turns = max_turns
         self.turn_timeout = turn_timeout
@@ -285,6 +284,9 @@ class GameConstants:
         self.turns_to_spell = turns_to_spell
         self.damage_upgrade_addition = damage_upgrade_addition
         self.range_upgrade_addition = range_upgrade_addition
+        self.deck_size = deck_size
+        self.hand_size = hand_size
+
         # if World.DEBUGGING_MODE:
         #     import datetime
         #     World.LOG_FILE_POINTER = open('client' + '-' +
