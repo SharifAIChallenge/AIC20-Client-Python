@@ -262,7 +262,7 @@ class World(ABC):
         self.player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
         self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg["units"])
-        self._handle_turn_units(msg=msg["diedUnits"], is_dead_unit=True)
+        #self._handle_turn_units(msg=msg["diedUnits"], is_dead_unit=True)
         self._handle_turn_cast_spells(msg["castSpells"])
 
         self.turn_updates = TurnUpdates(received_spell=msg["receivedSpell"],
