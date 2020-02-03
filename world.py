@@ -110,7 +110,7 @@ class World(ABC):
         self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
                                     base_attack=b_unit["baseAttack"],
                                     base_range=b_unit["baseRange"],
-                                    target_type=b_unit["target_type"],
+                                    target_type=b_unit["targetType"],
                                     is_flying=b_unit["isFlying"],
                                     is_multiple=b_unit["isMultiple"])
                            for b_unit in msg]
