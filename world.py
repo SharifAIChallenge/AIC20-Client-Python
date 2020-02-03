@@ -160,6 +160,10 @@ class World(ABC):
             unit_id = unit_msg["unitId"]
             player = self.get_player_by_id(player_id=unit_msg["playerId"])
             base_unit = self.base_units[unit_msg["typeId"]]
+            if not unit_msg['target'] == -1:
+                tc = Cell(row=unit_msg["targetCell"]["row"], col=unit_msg["targetCell"]["col"])
+            else:
+                tc = None
             unit = Unit(unit_id=unit_id, base_unit=base_unit,
                         cell=self.map.get_cell(unit_msg["cell"]["row"], unit_msg["cell"]["col"]),
                         path=self.map.get_path_by_id(unit_msg["pathId"]),
@@ -168,14 +172,16 @@ class World(ABC):
                         range_level=unit_msg["rangeLevel"],
                         was_damage_upgraded=unit_msg["wasDamageUpgraded"],
                         was_range_upgraded=unit_msg["wasRangeUpgraded"],
-                        is_hasted=unit_msg("isHasted"),
-                        is_clone=unit_msg("isClone"),
-                        active_poisons=unit_msg["activePoisons"],
-                        range=unit_msg("range"),
-                        attack=unit_msg("attack"),
-                        was_played_this_turn=unit_msg("wasPlayedThisTurn"),
-                        target_id=unit_msg["target"],
-                        target_cell=Cell(row=unit_msg["targetCell"]["row"], col=unit_msg["targetCell"]["col"]))
+                        is_hasted=unit_msg["isHasted"],
+                        is_clone=unit_msg["isDuplicate"],
+                        # is_clone=unit_msg.keys().isdisjoint("isClone") and unit_msg["isClone"],
+                        # active_poisons=unit_msg["activePoisons"],
+                        # active_poisons=unit_msg.keys().isdisjoint("activePoisons") and unit_msg["activePoisons"],
+                        range=unit_msg["range"],
+                        attack=unit_msg["attack"],
+                        was_played_this_turn=unit_msg["wasPlayedThisTurn"],
+                        target=unit_msg["target"],
+                        target_cell=tc)
             if not is_dead_unit:
                 self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
                 player.units.append(unit)
@@ -689,3 +695,6 @@ class World(ABC):
 
     def get_game_constants(self):
         return self.game_constants
+
+    def get_paths_from_player(self, player_id):
+        pass
