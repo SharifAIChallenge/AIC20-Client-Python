@@ -36,20 +36,16 @@ class Player:
         self.hand = []
         self.ap = 0
         self.paths_from_player = []
-        self.path_to_friend = None
-        self.cast_area_spell = None
-        self.cast_unit_spell = None
-        self.duplicate_units = None
-        self.hasted_units = None
+        self.path_to_friend = []
+        self.cast_area_spell = []
+        self.cast_unit_spell = []
+        self.duplicate_units = []
+        self.hasted_units = []
         self.units = []  # alive units
         self.played_units = []  # units that played last turn
         self.died_units = []
         self.range_upgraded_unit = None  # unit that last turn the player upgraded range of it
         self.damage_upgraded_unit = None  # unit that last turn the player upgraded damage of it
-
-        # deleted fields
-        self.spells = []
-        self.upgrade_tokens = 0
 
     def is_alive(self):
         return self.king.is_alive
@@ -64,9 +60,8 @@ class Player:
 
 
 class Unit:
-    def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, is_clone, damage_level,
-                 range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons,
-                 was_played_this_turn, target, target_cell):
+    def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, damage_level,
+                 range_level, range, attack, target, target_cell):
         self.unit_id = unit_id
         self.base_unit = base_unit
         self.cell = cell
@@ -83,16 +78,7 @@ class Unit:
         self.is_duplicate = False
         self.is_hasted = is_hasted
         self.affected_spells = []
-
-        # deleted fields
         self.hp = hp
-        self.is_clone = is_clone
-
-        self.was_damage_upgraded = was_damage_upgraded
-        self.was_range_upgraded = was_range_upgraded
-
-        self.active_poisons = active_poisons
-        self.was_played_this_turn = was_played_this_turn
 
 
 class SpellTarget(Enum):
@@ -131,16 +117,12 @@ class SpellType(Enum):
 
 
 class Spell:
-    def __init__(self, type, type_id, duration, priority, range, power, target):
+    def __init__(self, type, type_id, duration, priority, target):
         self.type = SpellType.get_value(type)
         self.type_id = type_id
         self.duration = duration
         self.priority = priority
         self.target = SpellTarget.get_value(target)
-
-        # deleted fields
-        self.range = range
-        self.power = power
 
     def is_unit_spell(self):
         return self.type == SpellType.TELE
@@ -203,15 +185,15 @@ class BaseUnit:
 
 
 class King:
-    def __init__(self, target, center=None, hp=0, attack=0, range=0):
+    def __init__(self, player_id, target, target_cell, center=None, hp=0, attack=0, range=0, is_alive=True):
         self.center = center
         self.hp = hp
         self.attack = attack
         self.range = range
         self.target = target
-        self.target_cell = None
-        self.is_alive = True
-        self.player_id = 0
+        self.target_cell = target_cell
+        self.is_alive = is_alive
+        self.player_id = player_id
 
 
 class Message:
