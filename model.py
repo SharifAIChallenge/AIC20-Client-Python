@@ -172,9 +172,7 @@ class Cell:
 
 
 class Path:
-    def __init__(self, id=0, cells=None):
-        if cells is None:
-            cells = []
+    def __init__(self, id, cells):
         self.cells = cells
         self.id = id
 
