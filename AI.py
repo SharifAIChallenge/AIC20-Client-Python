@@ -1,17 +1,15 @@
-from random import Random
-
-
 class AI:
 
     def pick(self, world):
-        self.r = Random()
         print("pick")
         world.choose_deck([1, 2, 3, 4])
-        print(world.put_unit(type_id=1, path=world.map.paths[self.r.randint(1, 4)]))
-        if len(world.player.units) > 0:
-            print(world.player.units[0].cell)
+        print(world.get_player_by_id(world.get_my_id()))
+        print(world.get_player_by_id(world.get_friend_id()))
+        for p in world.map.paths:
+            print(p)
+            print("------------")
+
+        print(world.get_path_to_friend(world.get_my_id()))
 
     def turn(self, world):
         print("turn")
-        if len(world.player.units) > 0:
-            print(world.player.units[0].cell)

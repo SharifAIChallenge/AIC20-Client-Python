@@ -2,11 +2,11 @@ from enum import Enum
 
 
 class Map:
-    def __init__(self, row_num, column_num, paths, kings, cells):
+    def __init__(self, row_num, column_num, paths, units, kings, cells):
         self.row_num = row_num
         self.column_num = column_num
         self.paths = paths
-        self.units = []
+        self.units = units
         self.kings = kings
         self.cells = cells
 
@@ -29,23 +29,25 @@ class Map:
 
 
 class Player:
-    def __init__(self, player_id, king):
+    def __init__(self, player_id, deck, hand, ap, king, paths_from_player, path_to_friend,
+                 units, cast_area_spell, cast_unit_spell, duplicate_units, hasted_units, played_units,
+                 died_units, range_upgraded_unit = None, damage_upgraded_unit = None):
         self.player_id = player_id
+        self.deck = deck
+        self.hand = hand
+        self.ap = ap
         self.king = king
-        self.deck = None
-        self.hand = []
-        self.ap = 0
-        self.paths_from_player = []
-        self.path_to_friend = []
-        self.cast_area_spell = []
-        self.cast_unit_spell = []
-        self.duplicate_units = []
-        self.hasted_units = []
-        self.units = []  # alive units
-        self.played_units = []  # units that played last turn
-        self.died_units = []
-        self.range_upgraded_unit = None  # unit that last turn the player upgraded range of it
-        self.damage_upgraded_unit = None  # unit that last turn the player upgraded damage of it
+        self.paths_from_player = paths_from_player
+        self.path_to_friend = path_to_friend
+        self.units = units # alive units
+        self.cast_area_spell = cast_area_spell
+        self.cast_unit_spell = cast_unit_spell
+        self.duplicate_units = duplicate_units
+        self.hasted_units = hasted_units
+        self.played_units = played_units  # units that played last turn
+        self.died_units = died_units # units that died last turn
+        self.range_upgraded_unit = range_upgraded_unit  # unit that last turn the player upgraded range of it
+        self.damage_upgraded_unit = damage_upgraded_unit  # unit that last turn the player upgraded damage of it
 
     def is_alive(self):
         return self.king.is_alive
@@ -60,25 +62,25 @@ class Player:
 
 
 class Unit:
-    def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, damage_level,
-                 range_level, range, attack, target, target_cell):
-        self.unit_id = unit_id
+    def __init__(self, base_unit, cell, unit_id, hp, path, target, target_cell,
+                 target_if_king, player_id, damage_level, range_level, range,
+                 attack, is_duplicate, is_hasted, affected_spells):
         self.base_unit = base_unit
         self.cell = cell
+        self.unit_id = unit_id
+        self.hp = hp
         self.path = path
         self.target = target
         self.target_cell = target_cell
-        self.cast_spells_on_unit = []
-        self.target_if_king = None
-        self.player_id = 0
+        self.target_if_king = target_if_king
+        self.player_id = player_id
         self.damage_level = damage_level
         self.range_level = range_level
         self.range = range
         self.attack = attack
-        self.is_duplicate = False
+        self.is_duplicate = is_duplicate
         self.is_hasted = is_hasted
-        self.affected_spells = []
-        self.hp = hp
+        self.affected_spells = affected_spells
 
 
 class SpellTarget(Enum):
@@ -113,6 +115,22 @@ class SpellType(Enum):
             return SpellType.DUPLICATE
         if string == "HASTE":
             return SpellType.HASTE
+        return None
+
+
+class UnitTarget(Enum):
+    GROUND = 1
+    AIR = 2
+    BOTH = 3
+
+    @staticmethod
+    def get_value(string):
+        if string == "GROUND":
+            return UnitTarget.GROUND
+        if string == "AIR":
+            return UnitTarget.AIR
+        if string == "BOTH":
+            return SpellType.BOTH
         return None
 
 
@@ -172,28 +190,28 @@ class Deck:
 
 
 class BaseUnit:
-    def __init__(self, type_id, max_hp, base_attack, base_range, target_type, is_flying, is_multiple):
+    def __init__(self, type_id, max_hp, base_attack, base_range, target_type, is_flying, is_multiple, ap):
         self.type_id = type_id
         self.max_hp = max_hp
-        self.ap = 0
-        self.attack = 0
         self.base_attack = base_attack
         self.base_range = base_range
+        self.target_type = target_type
         self.is_flying = is_flying
         self.is_multiple = is_multiple
-        self.target_type = target_type
+        self.ap = ap
 
 
 class King:
-    def __init__(self, player_id, target, target_cell, center=None, hp=0, attack=0, range=0, is_alive=True):
+    def __init__(self, center, hp, attack, range, is_alive, player_id,
+                 target, target_cell):
         self.center = center
         self.hp = hp
         self.attack = attack
         self.range = range
-        self.target = target
-        self.target_cell = target_cell
         self.is_alive = is_alive
         self.player_id = player_id
+        self.target = target
+        self.target_cell = target_cell
 
 
 class Message:
