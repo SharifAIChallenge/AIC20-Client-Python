@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class Map:
-    def __init__(self, row_count, column_count, paths, kings, cells):
-        self.row_count = row_count
-        self.column_count = column_count
+    def __init__(self, row_num, column_num, paths, kings, cells):
+        self.row_num = row_num
+        self.column_num = column_num
         self.paths = paths
         self.units = []
         self.kings = kings
@@ -31,14 +31,31 @@ class Map:
 class Player:
     def __init__(self, player_id, king):
         self.player_id = player_id
+        self.king = king
         self.deck = None
         self.hand = []
-        self.spells = []
         self.ap = 0
+        self.paths_from_player = []
+        self.path_to_friend = None
+        self.cast_area_spell = None
+        self.cast_unit_spell = None
+        self.duplicate_units = None
+        self.hasted_units = None
+        self.units = []  # alive units
+        self.played_units = []  # units that played last turn
+        self.died_units = []
+        self.range_upgraded_unit = None  # unit that last turn the player upgraded range of it
+        self.damage_upgraded_unit = None  # unit that last turn the player upgraded damage of it
+
+        # deleted fields
+        self.spells = []
         self.upgrade_tokens = 0
-        self.king = king
-        self.units = []
-        self.dead_units = []
+
+    def is_alive(self):
+        return self.king.is_alive
+
+    def get_hp(self):
+        return self.king.hp
 
     def __str__(self):
         return "<Player | " \
@@ -49,24 +66,33 @@ class Player:
 class Unit:
     def __init__(self, unit_id, base_unit, cell, path, hp, is_hasted, is_clone, damage_level,
                  range_level, was_damage_upgraded, was_range_upgraded, range, attack, active_poisons,
-                 was_played_this_turn, target_id, target_cell):
+                 was_played_this_turn, target, target_cell):
         self.unit_id = unit_id
         self.base_unit = base_unit
         self.cell = cell
         self.path = path
-        self.hp = hp
-        self.is_hasted = is_hasted
-        self.is_clone = is_clone
+        self.target = target
+        self.target_cell = target_cell
+        self.cast_spells_on_unit = []
+        self.target_if_king = None
+        self.player_id = 0
         self.damage_level = damage_level
         self.range_level = range_level
-        self.was_damage_upgraded = was_damage_upgraded
-        self.was_range_upgraded = was_range_upgraded
         self.range = range
         self.attack = attack
+        self.is_duplicate = False
+        self.is_hasted = is_hasted
+        self.affected_spells = []
+
+        # deleted fields
+        self.hp = hp
+        self.is_clone = is_clone
+
+        self.was_damage_upgraded = was_damage_upgraded
+        self.was_range_upgraded = was_range_upgraded
+
         self.active_poisons = active_poisons
         self.was_played_this_turn = was_played_this_turn
-        self.target_id = target_id
-        self.target_cell = target_cell
 
 
 class SpellTarget(Enum):
@@ -108,11 +134,13 @@ class Spell:
     def __init__(self, type, type_id, duration, priority, range, power, target):
         self.type = SpellType.get_value(type)
         self.type_id = type_id
-        self.turn_effect = duration
+        self.duration = duration
         self.priority = priority
+        self.target = SpellTarget.get_value(target)
+
+        # deleted fields
         self.range = range
         self.power = power
-        self.target = SpellTarget.get_value(target)
 
     def is_unit_spell(self):
         return self.type == SpellType.TELE
@@ -125,7 +153,7 @@ class Cell:
     def __init__(self, row=0, col=0):
         self.row = row
         self.col = col
-        self.units = []
+        self.units = []  # private access
 
     def __eq__(self, other):
         if not isinstance(other, Cell):
@@ -144,16 +172,16 @@ class Cell:
 
 
 class Path:
-    def __init__(self, path_id=0, cells=None):
+    def __init__(self, id=0, cells=None):
         if cells is None:
             cells = []
         self.cells = cells
-        self.path_id = path_id
+        self.id = id
 
     def __str__(self):
         return "<Path | " \
                "path id : {} | " \
-               "cells: {}>".format(self.path_id, ["({}, {})".format(cell.row, cell.col) for cell in self.cells])
+               "cells: {}>".format(self.id, ["({}, {})".format(cell.row, cell.col) for cell in self.cells])
 
 
 class Deck:
@@ -162,23 +190,28 @@ class Deck:
 
 
 class BaseUnit:
-    def __init__(self, type_id, max_hp, base_attack, base_range, target, is_flying, is_multiple):
+    def __init__(self, type_id, max_hp, base_attack, base_range, target_type, is_flying, is_multiple):
         self.type_id = type_id
         self.max_hp = max_hp
+        self.ap = 0
+        self.attack = 0
         self.base_attack = base_attack
         self.base_range = base_range
-        self.target = target
         self.is_flying = is_flying
         self.is_multiple = is_multiple
+        self.target_type = target_type
 
 
 class King:
-    def __init__(self, target_id, center=None, hp=0, attack=0, range=0):
+    def __init__(self, target, center=None, hp=0, attack=0, range=0):
         self.center = center
         self.hp = hp
         self.attack = attack
         self.range = range
-        self.target_id = target_id
+        self.target = target
+        self.target_cell = None
+        self.is_alive = True
+        self.player_id = 0
 
 
 class Message:
