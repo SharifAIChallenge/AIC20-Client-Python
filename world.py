@@ -91,14 +91,14 @@ class World(ABC):
         paths = [Path(path["id"], [input_cells[cell["row"]][cell["col"]] for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
         kings = [King(center=input_cells[king["center"]["row"]][king["center"]["col"]], hp=king["hp"],
-                      attack=king["attack"], range=king["range"], target_id=-1)
+                      attack=king["attack"], range=king["range"], target=None, target_cell=None, player_id=0)
                  for king in map_msg["kings"]]
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
         self.player = self.players[0]
         self.player_friend = self.players[1]
         self.player_first_enemy = self.players[2]
         self.player_second_enemy = self.players[3]
-        self.map = Map(row_count=row_num, column_count=col_num, paths=paths, kings=kings, cells=input_cells)
+        self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells)
 
     def get_unit_by_id(self, unit_id):
         for unit in self.map.units:
@@ -110,7 +110,7 @@ class World(ABC):
         self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
                                     base_attack=b_unit["baseAttack"],
                                     base_range=b_unit["baseRange"],
-                                    target=b_unit["target"],
+                                    target_type=b_unit["target_type"],
                                     is_flying=b_unit["isFlying"],
                                     is_multiple=b_unit["isMultiple"])
                            for b_unit in msg]
@@ -126,8 +126,6 @@ class World(ABC):
                              type_id=spell["typeId"],
                              duration=spell["duration"],
                              priority=spell["priority"],
-                             range=spell["range"],
-                             power=spell["power"],
                              target=spell["target"])
                        for spell in msg]
 
@@ -170,16 +168,12 @@ class World(ABC):
                         hp=unit_msg["hp"],
                         damage_level=unit_msg["damageLevel"],
                         range_level=unit_msg["rangeLevel"],
-                        was_damage_upgraded=unit_msg["wasDamageUpgraded"],
-                        was_range_upgraded=unit_msg["wasRangeUpgraded"],
                         is_hasted=unit_msg["isHasted"],
-                        is_clone=unit_msg["isDuplicate"],
                         # is_clone=unit_msg.keys().isdisjoint("isClone") and unit_msg["isClone"],
                         # active_poisons=unit_msg["activePoisons"],
                         # active_poisons=unit_msg.keys().isdisjoint("activePoisons") and unit_msg["activePoisons"],
                         range=unit_msg["range"],
                         attack=unit_msg["attack"],
-                        was_played_this_turn=unit_msg["wasPlayedThisTurn"],
                         target=unit_msg["target"],
                         target_cell=tc)
             if not is_dead_unit:
@@ -300,43 +294,6 @@ class World(ABC):
     def get_second_enemy(self):
         return self.player_second_enemy
 
-    # returns a cell that is the fortress of player with player_id
-    # def get_player_position(self, player_id):
-    #     player = self.get_player_by_id(player_id)
-    #     if player is not None:
-    #         return player.king.center
-    #
-    # # return a list of paths starting from the fortress of player with player_id
-    # # the beginning is from player_id fortress cell
-    # def get_paths_from_player(self, player_id):
-    #     paths = []
-    #     player_king_cell = self.get_player_position(player_id)
-    #     for p in self.map.paths:
-    #         first_cell = p.cells[0]
-    #         last_cell = p.cells[len(p.cells) - 1]
-    #         if first_cell == player_king_cell:
-    #             paths.append(p)
-    #             continue
-    #         if last_cell == player_king_cell:
-    #             p.cells.reverse()
-    #             paths.append(p)
-    #             continue
-    #     return paths
-    #
-    # # returns the path from player_id to its friend beginning from player_id's fortress
-    # def get_path_to_friend(self, player_id):
-    #     player_king_cell = self.get_player_position(player_id)
-    #     friend_king_cell = self.get_friend_by_id(player_id).king.center
-    #
-    #     for p in self.map.paths:
-    #         first_cell = p.cells[0]
-    #         last_cell = p.cells[len(p.cells) - 1]
-    #         if first_cell == player_king_cell and last_cell == friend_king_cell:
-    #             return p
-    #         if last_cell == player_king_cell and first_cell == friend_king_cell:
-    #             p.cells.reverse()
-    #             return p
-
     def get_map(self):
         return self.map
 
@@ -384,22 +341,6 @@ class World(ABC):
 
         return shortest_path_to_cell[cell.row][cell.col]
 
-    # # returns the limit of ap for each player
-    # def get_max_ap(self):
-    #     return self.game_constants.max_ap
-    #
-    # # get remaining ap
-    # def get_remaining_ap(self):
-    #     return self.player.ap
-    #
-    # # returns a list of units in hand
-    # def get_hand(self):
-    #     return self.player.hand
-    #
-    # # returns a list of units in deck
-    # def get_deck(self):
-    #     return self.player.deck
-
     # place unit with type_id in path_id
     def put_unit(self, type_id=None, path_id=None, base_unit=None, path=None):
         if base_unit is not None:
@@ -419,18 +360,6 @@ class World(ABC):
     # return the number of turns passed
     def get_current_turn(self):
         return self.current_turn
-
-    # # return the limit of turns
-    # def get_max_turns(self):
-    #     return self.game_constants.max_turns
-    #
-    # # return the time left to pick units and put in deck in the first turn
-    # def get_pick_timeout(self):
-    #     return self.game_constants.pick_timeout
-    #
-    # # a constant limit for each turn
-    # def get_turn_timeout(self):
-    #     return self.game_constants.turn_timeout
 
     # returns the time left for turn (miliseconds)
     def get_remaining_time(self):
@@ -513,16 +442,6 @@ class World(ABC):
                 return True
         return False
 
-    # def get_cast_spells_on_unit(self, unit=None, unit_id=None):
-    #     ls = []
-    #     if unit_id is None:
-    #         unit_id = unit.unit_id
-    #     for cast_spell in self.cast_spells:
-    #         if cast_spell is isinstance(CastUnitSpell):
-    #             if unit_id == cast_spell.unit_id:
-    #                 ls.append(unit_id)
-    #     return ls
-
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
         return self.game_constants.turns_to_upgrade
@@ -530,16 +449,6 @@ class World(ABC):
     # every once in a while a spell is given this remains the remaining time to get new spell
     def get_remaining_turns_to_get_spell(self):
         return self.game_constants.turns_to_spell
-
-    # returns area spells that are casted in last turn and returns other players spells also
-    # def get_cast_area_spell(self, player_id):
-    #     return [cast_spell_i for cast_spell_i in self.cast_spells
-    #             if cast_spell_i.caster_id and isinstance(cast_spell_i, CastAreaSpell)]
-    #
-    # # returns unit spells that are casted in last turn and returns other players spells also
-    # def get_cast_unit_spell(self, player_id):
-    #     return [cast_spell_i for cast_spell_i in self.cast_spells
-    #             if cast_spell_i.caster_id and isinstance(cast_spell_i, CastUnitSpell)]
 
     # returns a list of spells casted on a cell
     def get_range_upgrade_number(self, player_id):
@@ -599,59 +508,11 @@ class World(ABC):
                                        "unitId": unit_id
                                    }))
 
-    # def get_player_duplicate_unit(self, player_id):
-    #     unit_list = []
-    #     for u in self.get_player_by_id(player_id).units:
-    #         if u.is_clone:
-    #             unit_list.append(u)
-    #     return unit_list
-
     def get_player_hasted_units(self, player_id):
         return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.is_hasted > 0]
 
     def get_player_played_units(self, player_id):
         return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.was_played_this_turn]
-
-    # def get_unit_target(self, unit=None, unit_id=None):
-    #     if unit_id is None:
-    #         if unit is None:
-    #             return None
-    #         unit_id = unit.unit_id
-    #
-    #     target_id = self.get_unit_by_id(unit_id).target_id
-    #     unit = self.get_unit_by_id(target_id)
-    #     return unit
-    #
-    # def get_unit_target_cell(self, unit=None, unit_id=None):
-    #     if unit_id is None:
-    #         if unit is None:
-    #             return None
-    #         unit_id = unit.unit_id
-    #
-    #     target_id = self.get_unit_by_id(unit_id).target_id
-    #     cell = self.get_unit_by_id(unit_id).target_cell
-    #     unit = self.get_unit_by_id(target_id)
-    #     if unit is None:
-    #         return None
-    #
-    #     return cell
-    #
-    # def get_king_target(self, player_id):
-    #     king = self.get_player_by_id(player_id).king
-    #     return self.get_unit_by_id(king.target_id)
-    #
-    # def get_king_target_cell(self, player_id):
-    #     king = self.get_player_by_id(player_id).king
-    #     return king.target_cell
-    #
-    # def get_king_unit_is_attacking_to(self, unit=None, unit_id=None):
-    #     if unit is not None:
-    #         unit_id = unit.unit_id
-    #     unit = self.get_unit_by_id(unit_id)
-    #     for p in self.players:
-    #         if unit.target_id == p.player_id:
-    #             return p.player_id
-    #     return -1
 
     def get_all_base_unit(self):
         return copy.deepcopy(self.base_units)
@@ -671,27 +532,6 @@ class World(ABC):
             if bu.type_id == type_id:
                 return bu
         return None
-
-    # def get_player_died_units(self, player_id):
-    #     return self.get_player_by_id(player_id).dead_units
-    #
-    # def has_player_used_ranged_upgrade(self, player_id):
-    #     for u in self.get_player_by_id(player_id).dead_units:
-    #         if u.was_range_upgraded:
-    #             return True
-    #     for u in self.get_player_by_id(player_id).units:
-    #         if u.was_range_upgraded:
-    #             return True
-    #     return False
-    #
-    # def has_player_used_damage_upgrade(self, player_id):
-    #     for u in self.get_player_by_id(player_id).dead_units:
-    #         if u.was_damage_upgraded:
-    #             return True
-    #     for u in self.get_player_by_id(player_id).units:
-    #         if u.was_damage_upgraded:
-    #             return True
-    #     return False
 
     def get_game_constants(self):
         return self.game_constants
