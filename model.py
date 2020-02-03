@@ -130,7 +130,7 @@ class UnitTarget(Enum):
         if string == "AIR":
             return UnitTarget.AIR
         if string == "BOTH":
-            return SpellType.BOTH
+            return UnitTarget.BOTH
         return None
 
 
