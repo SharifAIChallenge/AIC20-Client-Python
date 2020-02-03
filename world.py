@@ -126,8 +126,6 @@ class World(ABC):
                              type_id=spell["typeId"],
                              duration=spell["duration"],
                              priority=spell["priority"],
-                             range=spell["range"],
-                             power=spell["power"],
                              target=spell["target"])
                        for spell in msg]
 
@@ -170,16 +168,12 @@ class World(ABC):
                         hp=unit_msg["hp"],
                         damage_level=unit_msg["damageLevel"],
                         range_level=unit_msg["rangeLevel"],
-                        was_damage_upgraded=unit_msg["wasDamageUpgraded"],
-                        was_range_upgraded=unit_msg["wasRangeUpgraded"],
                         is_hasted=unit_msg["isHasted"],
-                        is_clone=unit_msg["isDuplicate"],
                         # is_clone=unit_msg.keys().isdisjoint("isClone") and unit_msg["isClone"],
                         # active_poisons=unit_msg["activePoisons"],
                         # active_poisons=unit_msg.keys().isdisjoint("activePoisons") and unit_msg["activePoisons"],
                         range=unit_msg["range"],
                         attack=unit_msg["attack"],
-                        was_played_this_turn=unit_msg["wasPlayedThisTurn"],
                         target=unit_msg["target"],
                         target_cell=tc)
             if not is_dead_unit:
