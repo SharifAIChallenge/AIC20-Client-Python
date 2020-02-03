@@ -36,11 +36,11 @@ class Player:
         self.hand = []
         self.ap = 0
         self.paths_from_player = []
-        self.path_to_friend = None
-        self.cast_area_spell = None
-        self.cast_unit_spell = None
-        self.duplicate_units = None
-        self.hasted_units = None
+        self.path_to_friend = []
+        self.cast_area_spell = []
+        self.cast_unit_spell = []
+        self.duplicate_units = []
+        self.hasted_units = []
         self.units = []  # alive units
         self.played_units = []  # units that played last turn
         self.died_units = []
@@ -203,15 +203,15 @@ class BaseUnit:
 
 
 class King:
-    def __init__(self, target, center=None, hp=0, attack=0, range=0):
+    def __init__(self, player_id, target, target_cell, center=None, hp=0, attack=0, range=0, is_alive=True):
         self.center = center
         self.hp = hp
         self.attack = attack
         self.range = range
         self.target = target
-        self.target_cell = None
-        self.is_alive = True
-        self.player_id = 0
+        self.target_cell = target_cell
+        self.is_alive = is_alive
+        self.player_id = player_id
 
 
 class Message:
