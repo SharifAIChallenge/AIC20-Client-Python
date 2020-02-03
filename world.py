@@ -3,7 +3,7 @@ import time
 from abc import ABC
 
 from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell, Unit, Spell, Message
+    CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget
 
 
 #################### Soalat?
@@ -82,23 +82,40 @@ class World(ABC):
                                             damage_upgrade_addition=game_constants_msg["damageUpgradeAddition"],
                                             range_upgrade_addition=game_constants_msg["rangeUpgradeAddition"])
 
+    def _find_path_starting_or_ending_with(self, first_or_last, paths):
+        for path in paths:
+            if path.cells[0] == first_or_last or path.cells[-1] == first_or_last:
+                return path
+        return None
+
     def _map_init(self, map_msg):
         row_num = map_msg["rows"]
         col_num = map_msg["cols"]
 
         input_cells = [[Cell(row=row, col=col) for col in range(col_num)] for row in range(row_num)]
 
-        paths = [Path(path["id"], [input_cells[cell["row"]][cell["col"]] for cell in path["cells"]]
+        paths = [Path(id=path["id"], cells=[input_cells[cell["row"]][cell["col"]] for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
-        kings = [King(center=input_cells[king["center"]["row"]][king["center"]["col"]], hp=king["hp"],
-                      attack=king["attack"], range=king["range"], target=None, target_cell=None, player_id=0)
+        kings = [King(player_id=king["playerId"], center=input_cells[king["center"]["row"]][king["center"]["col"]], hp=king["hp"],
+                      attack=king["attack"], range=king["range"], target=None, target_cell=None, is_alive=True)
                  for king in map_msg["kings"]]
-        self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i]) for i in range(4)]
+
+        self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i], deck=[],
+                               hand=[], ap=self.game_constants.max_ap, paths_from_player=[],
+                               path_to_friend=self._find_path_starting_or_ending_with(kings[i].center, paths),
+                               units=[], cast_area_spell=None, cast_unit_spell=None,
+                               duplicate_units=[],
+                               hasted_units=[],
+                               played_units=[],
+                               died_units=[],
+                               range_upgraded_unit=None,
+                               damage_upgraded_unit=None) for i in range(4)]
+
         self.player = self.players[0]
         self.player_friend = self.players[1]
         self.player_first_enemy = self.players[2]
         self.player_second_enemy = self.players[3]
-        self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells)
+        self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
 
     def get_unit_by_id(self, unit_id):
         for unit in self.map.units:
@@ -110,9 +127,10 @@ class World(ABC):
         self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
                                     base_attack=b_unit["baseAttack"],
                                     base_range=b_unit["baseRange"],
-                                    target_type=b_unit["targetType"],
+                                    target_type=UnitTarget.get_value(b_unit["target"]),
                                     is_flying=b_unit["isFlying"],
-                                    is_multiple=b_unit["isMultiple"])
+                                    is_multiple=b_unit["isMultiple"],
+                                    ap=b_unit["ap"])
                            for b_unit in msg]
 
     def _get_base_unit_by_id(self, type_id):
