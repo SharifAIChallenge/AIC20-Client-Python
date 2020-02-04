@@ -30,7 +30,7 @@ class World(ABC):
         self.player_first_enemy = None
         self.player_second_enemy = None
         self.spells = None
-        self.cast_spells = None
+        self.cast_spells = []
 
         if world is not None:
             self.game_constants = world.game_constants
@@ -451,7 +451,7 @@ class World(ABC):
             message = Message(type="castSpell",
                               turn=self.get_current_turn(),
                               info={
-                                  "typeId": spell.type,
+                                  "typeId": spell.type_id,
                                   "cell": {
                                       "row": center.row,
                                       "col": center.col
