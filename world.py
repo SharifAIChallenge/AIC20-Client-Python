@@ -581,3 +581,6 @@ class World(ABC):
             if c_path.cells[0] == first:
                 ret.append(c_path)
         return ret
+
+    def _handle_end_message(self, scores_list_msg):
+        return dict([(score["playerId"], score["score"]) for score in scores_list_msg])
