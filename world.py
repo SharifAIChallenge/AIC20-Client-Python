@@ -107,7 +107,8 @@ class World(ABC):
                  for king in map_msg["kings"]]
 
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i], deck=[],
-                               hand=[], ap=self.game_constants.max_ap, paths_from_player=[],
+                               hand=[], ap=self.game_constants.max_ap,
+                               paths_from_player=self._get_paths_starting_with(kings[i].center, paths),
                                path_to_friend=self._find_path_starting_and_ending_with(kings[i].center, kings[i^1].center, paths),
                                units=[], cast_area_spell=None, cast_unit_spell=None,
                                duplicate_units=[],
@@ -586,3 +587,13 @@ class World(ABC):
 
     def get_paths_from_player(self, player_id):
         pass
+
+    def _get_paths_starting_with(self, first, paths):
+        ret = []
+        for path in paths:
+            c_path = Path(path = path)
+            if c_path.cells[-1] == first:
+                c_path.cells.reverse()
+            if c_path.cells[0] == first:
+                ret.append(c_path)
+        return ret
