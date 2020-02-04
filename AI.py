@@ -22,6 +22,14 @@ class AI:
 
     def turn(self, world):
         print("turn")
+        if world.get_current_turn() == 12:
+            print("turn 12 baby!")
+            print(len(world.get_me().get_spells()))
+            for spell in world.get_me().get_spells():
+                print(spell)
+                print(world.get_me().get_spell_count(spell))
+                print("---")
+
         if world.get_current_turn() == 20:
             print("its turn 2!!!")
             world.put_unit(base_unit=world.get_me().hand[0], path=world.get_me().paths_from_player[0])

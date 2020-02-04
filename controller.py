@@ -36,6 +36,7 @@ class Controller:
             new_world._handle_turn_message(message[ServerConstants.KEY_INFO])
             threading.Thread(target=self.launch_on_thread, args=(self.client.turn, new_world)).start()
 
+
         elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_SHUTDOWN:
             self.terminate()
 

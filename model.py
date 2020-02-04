@@ -29,7 +29,7 @@ class Map:
 class Player:
     def __init__(self, player_id, deck, hand, ap, king, paths_from_player, path_to_friend,
                  units, cast_area_spell, cast_unit_spell, duplicate_units, hasted_units, played_units,
-                 died_units, range_upgraded_unit = None, damage_upgraded_unit = None):
+                 died_units, spells, range_upgraded_unit = None, damage_upgraded_unit = None):
         self.player_id = player_id
         self.deck = deck
         self.hand = hand
@@ -44,6 +44,7 @@ class Player:
         self.hasted_units = hasted_units
         self.played_units = played_units  # units that played last turn
         self.died_units = died_units # units that died last turn
+        self.spells = spells
         self.range_upgraded_unit = range_upgraded_unit  # unit that last turn the player upgraded range of it
         self.damage_upgraded_unit = damage_upgraded_unit  # unit that last turn the player upgraded damage of it
 
@@ -52,6 +53,23 @@ class Player:
 
     def get_hp(self):
         return self.king.hp
+
+    def set_spells(self, spells):
+        self.spells = spells
+        self._spells_dict = {}
+        for spell in spells:
+            if spell.type_id in self._spells_dict:
+                self._spells_dict[spell.type_id] += 1
+            else:
+                self._spells_dict[spell.type_id] = 1
+
+    def get_spell_count(self, spell):
+        if spell.type_id in self._spells_dict:
+            return self._spells_dict[spell.type_id]
+        return 0
+
+    def get_spells(self):
+        return self.spells
 
     def __str__(self):
         return "<Player | " \
@@ -149,6 +167,13 @@ class Spell:
     def is_area_spell(self):
         return not self.is_unit_spell()
 
+    def __eq__(self, other):
+        return self.type_id == other.type_id
+
+    def __str__(self):
+        return "<Spell | " \
+               "type : {} | " \
+               "type id : {}>".format(self.type, self.type_id)
 
 class Cell:
     def __init__(self, row=0, col=0):

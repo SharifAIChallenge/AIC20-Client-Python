@@ -116,7 +116,8 @@ class World(ABC):
                                played_units=[],
                                died_units=[],
                                range_upgraded_unit=None,
-                               damage_upgraded_unit=None) for i in range(4)]
+                               damage_upgraded_unit=None,
+                               spells=[]) for i in range(4)]
 
         for player in self.players:
             player.paths_from_player.remove(player.path_to_friend)
@@ -281,8 +282,8 @@ class World(ABC):
                                         available_range_upgrades=msg["availableRangeUpgrades"],
                                         available_damage_upgrades=msg["availableDamageUpgrades"])
 
-        self.player.spells = msg["mySpells"]
-        self.player_friend.spells = msg["friendSpells"]
+        self.player.set_spells([self.get_spell_by_id(spell_id=spell_id) for spell_id in msg["mySpells"]])
+        self.player_friend.set_spells([self.get_spell_by_id(spell_id=spell_id) for spell_id in msg["friendSpells"]])
 
         self.start_time = self.get_current_time_millis()
 
@@ -504,19 +505,6 @@ class World(ABC):
 
     def get_damage_upgrade_number(self, player_id):
         return self.turn_updates.available_damage_upgrade
-
-    def get_spells_list(self):
-        return self.player.spells
-
-    # get current available spells as a dictionary
-    def get_spells(self):
-        return_dict = dict()
-        for spell in self.player.spells:
-            if spell in return_dict:
-                return_dict[spell] += 1
-            else:
-                return_dict[spell] = 1
-        return return_dict
 
     # returns the spell given in that turn
     def get_received_spell(self):
