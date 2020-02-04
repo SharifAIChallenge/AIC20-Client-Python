@@ -175,14 +175,23 @@ class Cell:
 
 
 class Path:
-    def __init__(self, id, cells):
-        self.cells = cells
-        self.id = id
+    def __init__(self, id=None, cells=None, path=None):
+        if id is not None and cells is not None:
+            self.cells = cells
+            self.id = id
+        if path is not None:
+            self.id = path.id
+            self.cells = []
+            for cell in path.cells:
+                self.cells.append(cell)
 
     def __str__(self):
         return "<Path | " \
                "path id : {} | " \
                "cells: {}>".format(self.id, ["({}, {})".format(cell.row, cell.col) for cell in self.cells])
+
+    def __eq__(self, other):
+        return self.id == other.id
 
 
 class Deck:
