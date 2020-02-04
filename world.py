@@ -84,10 +84,14 @@ class World(ABC):
                                             hand_size=game_constants_msg["handSize"],
                                             deck_size=game_constants_msg["deckSize"])
 
-    def _find_path_starting_or_ending_with(self, first_or_last, paths):
+    def _find_path_starting_and_ending_with(self, first, last, paths):
         for path in paths:
-            if path.cells[0] == first_or_last or path.cells[-1] == first_or_last:
-                return path
+            c_path = Path(path=path)
+            if c_path.cells[0] == first and c_path.cells[-1] == last:
+                return c_path
+            c_path.cells.reverse()
+            if c_path.cells[0] == first and c_path.cells[-1] == last:
+                return c_path
         return None
 
     def _map_init(self, map_msg):
@@ -104,7 +108,7 @@ class World(ABC):
 
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i], deck=[],
                                hand=[], ap=self.game_constants.max_ap, paths_from_player=[],
-                               path_to_friend=self._find_path_starting_or_ending_with(kings[i].center, paths),
+                               path_to_friend=self._find_path_starting_and_ending_with(kings[i].center, kings[i^1].center, paths),
                                units=[], cast_area_spell=None, cast_unit_spell=None,
                                duplicate_units=[],
                                hasted_units=[],
@@ -117,6 +121,7 @@ class World(ABC):
         self.player_friend = self.players[1]
         self.player_first_enemy = self.players[2]
         self.player_second_enemy = self.players[3]
+
         self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
 
     def get_unit_by_id(self, unit_id):
@@ -262,7 +267,7 @@ class World(ABC):
         self.player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
         self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg["units"])
-        #self._handle_turn_units(msg=msg["diedUnits"], is_dead_unit=True)
+        self._handle_turn_units(msg=msg["diedUnits"], is_dead_unit=True)
         self._handle_turn_cast_spells(msg["castSpells"])
 
         self.turn_updates = TurnUpdates(received_spell=msg["receivedSpell"],

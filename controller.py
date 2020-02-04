@@ -12,6 +12,7 @@ from world import World
 
 
 class Controller:
+
     def __init__(self):
         self.sending_flag = True
         self.conf = {}
