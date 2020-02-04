@@ -419,19 +419,9 @@ class World(ABC):
     #     return player.king.hp
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
-    def cast_unit_spell(self, unit_id, path_id, index, spell=None, spell_id=None):
+    def cast_unit_spell(self, unit_id, path_id, cell, spell=None, spell_id=None):
         if spell is None and spell_id is None:
             return None
-        path = None
-        for p in self.map.paths:
-            if p.path_id == path_id:
-                path = p
-                break
-        if path is None:
-            return None
-        if index < len(path.cells):
-            return None
-        cell = path.cells[index]
         if spell is None:
             spell = self.get_spell_by_type_id(spell_id)
         message = Message(type="castSpell", turn=self.get_current_turn(),
