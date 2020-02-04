@@ -208,6 +208,10 @@ class BaseUnit:
         self.is_multiple = is_multiple
         self.ap = ap
 
+    def __str__(self):
+        return "<BaseUnit | " \
+               "type id : {}".format(self.type_id)
+
 
 class King:
     def __init__(self, center, hp, attack, range, is_alive, player_id,
