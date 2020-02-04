@@ -35,3 +35,6 @@ class AI:
             print("its turn 2!!!")
             world.put_unit(base_unit=world.get_me().hand[0], path=world.get_me().paths_from_player[0])
 
+    def end(self, world, scores):
+        print("ending")
+
