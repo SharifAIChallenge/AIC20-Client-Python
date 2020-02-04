@@ -1,13 +1,13 @@
 class AI:
 
     def pick(self, world):
+        print("pick")
         #self.path_to_friend_check(world)
         world.choose_deck([1, 2, 3, 4])
 
+
     def path_to_friend_check(self, world):
         # path check:
-        print("pick")
-        world.choose_deck([1, 2, 3, 4])
         print(world.get_me())
         print(world.get_me().path_to_friend)
         print("----------")
@@ -22,5 +22,7 @@ class AI:
 
     def turn(self, world):
         print("turn")
-        for item in world.get_me().hand:
-            print(item)
+        if world.get_current_turn() == 20:
+            print("its turn 2!!!")
+            world.put_unit(base_unit=world.get_me().hand[0], path=world.get_me().paths_from_player[0])
+

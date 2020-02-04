@@ -20,7 +20,7 @@ class Map:
                 cell.clear_units()
 
     def get_path_by_id(self, path_id):
-        return self.paths_dict[path_id]
+        return None if not path_id in self.paths_dict else self.paths_dict[path_id]
 
     def add_unit_in_cell(self, row, column, unit):
         self.cells[row][column].add_unit(unit)
@@ -210,7 +210,7 @@ class BaseUnit:
 
     def __str__(self):
         return "<BaseUnit | " \
-               "type id : {}".format(self.type_id)
+               "type id : {}>".format(self.type_id)
 
 
 class King:

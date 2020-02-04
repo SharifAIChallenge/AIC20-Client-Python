@@ -118,6 +118,9 @@ class World(ABC):
                                range_upgraded_unit=None,
                                damage_upgraded_unit=None) for i in range(4)]
 
+        for player in self.players:
+            player.paths_from_player.remove(player.path_to_friend)
+
         self.player = self.players[0]
         self.player_friend = self.players[1]
         self.player_first_enemy = self.players[2]
@@ -210,7 +213,7 @@ class World(ABC):
                         target=unit_msg["target"],
                         target_cell=target_cell,
                         affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in unit_msg["affectedSpells"]],
-                        target_if_king=self.get_player_by_id(unit_msg["target"]).king,
+                        target_if_king=None if self.get_player_by_id(unit_msg["target"]) == None else self.get_player_by_id(unit_msg["target"]).king,
                         player_id=unit_msg["playerId"])
             if not is_dead_unit:
                 self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
@@ -398,9 +401,9 @@ class World(ABC):
         if base_unit is not None:
             type_id = base_unit.type_id
         if path is not None:
-            path_id = path.path_id
+            path_id = path.id
         if path_id is None or type_id is None:
-            return
+            return None
         message = Message(turn=self.get_current_turn(),
                           type="putUnit",
                           info={
@@ -580,9 +583,6 @@ class World(ABC):
 
     def get_game_constants(self):
         return self.game_constants
-
-    def get_paths_from_player(self, player_id):
-        pass
 
     def _get_paths_starting_with(self, first, paths):
         ret = []
