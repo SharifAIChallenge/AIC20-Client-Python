@@ -22,13 +22,14 @@ class AI:
 
     def turn(self, world):
         print("turn")
-        if world.get_current_turn() == 12:
-            print("turn 12 baby!")
+        if world.get_current_turn() == 26:
+            print("turn 26 baby!")
             print(len(world.get_me().get_spells()))
             for spell in world.get_me().get_spells():
                 print(spell)
                 print(world.get_me().get_spell_count(spell))
                 print("---")
+            world.cast_area_spell(row=4, col=12, spell=world.get_me().get_spells()[0])
 
         if world.get_current_turn() == 20:
             print("its turn 2!!!")
