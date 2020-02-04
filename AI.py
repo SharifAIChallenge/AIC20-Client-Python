@@ -1,6 +1,17 @@
 class AI:
 
     def pick(self, world):
+        #self.path_to_friend_check(world)
+        for path in world.map.paths:
+            print(path)
+            print("----------")
+
+        print("====================")
+        for path in world.get_me().paths_from_player:
+            print(path)
+            print("***")
+
+    def path_to_friend_check(self, world):
         # path check:
         print("pick")
         world.choose_deck([1, 2, 3, 4])
