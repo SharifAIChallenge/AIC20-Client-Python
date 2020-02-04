@@ -6,6 +6,7 @@ class Map:
         self.row_num = row_num
         self.column_num = column_num
         self.paths = paths
+        self.paths_dict = dict([(path.id, path) for path in paths])
         self.units = units
         self.kings = kings
         self.cells = cells
@@ -19,10 +20,7 @@ class Map:
                 cell.clear_units()
 
     def get_path_by_id(self, path_id):
-        for path in self.paths:
-            if path.path_id == path_id:
-                return path
-        return None
+        return self.paths_dict[path_id]
 
     def add_unit_in_cell(self, row, column, unit):
         self.cells[row][column].add_unit(unit)
