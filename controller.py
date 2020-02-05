@@ -38,10 +38,10 @@ class Controller:
 
 
         elif message[ServerConstants.KEY_TYPE] == ServerConstants.MESSAGE_TYPE_SHUTDOWN:
-            # new_world = World(world=self.world)
-            # new_world._handle_turn_message(message[ServerConstants.KEY_INFO]["turnMessage"])
-            # scores_map = new_world._handle_end_message(message[ServerConstants.KEY_INFO]["scores"])
-            # self.client.end(new_world, scores_map)
+            new_world = World(world=self.world)
+            new_world._handle_turn_message(message[ServerConstants.KEY_INFO]["turnMessage"])
+            scores_map = new_world._handle_end_message(message[ServerConstants.KEY_INFO]["scores"])
+            self.client.end(new_world, scores_map)
             self.terminate()
 
     def launch_on_thread(self, action, world):
