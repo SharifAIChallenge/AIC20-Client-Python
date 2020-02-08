@@ -102,14 +102,16 @@ class World(ABC):
 
         paths = [Path(id=path["id"], cells=[input_cells[cell["row"]][cell["col"]] for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
-        kings = [King(player_id=king["playerId"], center=input_cells[king["center"]["row"]][king["center"]["col"]], hp=king["hp"],
+        kings = [King(player_id=king["playerId"], center=input_cells[king["center"]["row"]][king["center"]["col"]],
+                      hp=king["hp"],
                       attack=king["attack"], range=king["range"], target=None, target_cell=None, is_alive=True)
                  for king in map_msg["kings"]]
 
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i], deck=[],
                                hand=[], ap=self.game_constants.max_ap,
                                paths_from_player=self._get_paths_starting_with(kings[i].center, paths),
-                               path_to_friend=self._find_path_starting_and_ending_with(kings[i].center, kings[i^1].center, paths),
+                               path_to_friend=self._find_path_starting_and_ending_with(kings[i].center,
+                                                                                       kings[i ^ 1].center, paths),
                                units=[], cast_area_spell=None, cast_unit_spell=None,
                                duplicate_units=[],
                                hasted_units=[],
@@ -176,7 +178,8 @@ class World(ABC):
         for king_msg in msg:
             hp = king_msg["hp"] if (king_msg["hp"] > 0 and king_msg["isAlive"]) else -1
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
-            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"] if king_msg["target"] != -1 else None
+            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"] if king_msg[
+                                                                                                "target"] != -1 else None
 
     def _handle_turn_units(self, msg, is_dead_unit=False):
         if not is_dead_unit:
@@ -213,8 +216,10 @@ class World(ABC):
                         attack=unit_msg["attack"],
                         target=unit_msg["target"],
                         target_cell=target_cell,
-                        affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in unit_msg["affectedSpells"]],
-                        target_if_king=None if self.get_player_by_id(unit_msg["target"]) == None else self.get_player_by_id(unit_msg["target"]).king,
+                        affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in
+                                         unit_msg["affectedSpells"]],
+                        target_if_king=None if self.get_player_by_id(
+                            unit_msg["target"]) == None else self.get_player_by_id(unit_msg["target"]).king,
                         player_id=unit_msg["playerId"])
             if not is_dead_unit:
                 self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
@@ -312,12 +317,12 @@ class World(ABC):
             return shortest_path_to_cell
 
         for p in self.players:
-            paths = self.get_paths_from_player(p.player_id)
+            paths = p.paths_from_player
             for i in range(len(paths)):
                 self.shortest_path.update({p.player_id: path_count(paths[i])})
+            self.shortest_path.update({p.player_id: path_count(p.path_to_friend)})
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-
     def choose_deck(self, type_ids=None, base_units=None):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
@@ -393,7 +398,10 @@ class World(ABC):
 
         shortest_path_to_cell = self.shortest_path.get(player_id)
         if shortest_path_to_cell[cell.row][cell.col] == -1:
-            return None
+            shortest_path_from_friend = self.shortest_path.get(self.get_friend_by_id(player_id))
+            if shortest_path_from_friend[cell.row][cell.col] == -1:
+                return None
+            return len(p.path_to_friend.cells) + shortest_path_from_friend[cell.row][cell.col]
 
         return shortest_path_to_cell[cell.row][cell.col]
 
@@ -575,7 +583,7 @@ class World(ABC):
     def _get_paths_starting_with(self, first, paths):
         ret = []
         for path in paths:
-            c_path = Path(path = path)
+            c_path = Path(path=path)
             if c_path.cells[-1] == first:
                 c_path.cells.reverse()
             if c_path.cells[0] == first:
