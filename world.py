@@ -387,21 +387,22 @@ class World(ABC):
     # return the shortest path from player_id fortress to cell
     # this path is in the available path list
     # path may cross from friend
-    def get_shortest_path_to_cell(self, player_id, cell=None, row=None, col=None):
+    def get_shortest_path_to_cell(self, from_player_id=None, from_player=None, cell=None, row=None, col=None):
         if len(list(self.shortest_path.values())) == 0:
             self._pre_process_shortest_path()
-
+        if from_player is not None:
+            from_player_id = from_player.player_id
         if cell is None:
             if row is None or col is None:
                 return
             cell = self.map.get_cell(row, col)
 
-        shortest_path_to_cell = self.shortest_path.get(player_id)
+        shortest_path_to_cell = self.shortest_path.get(from_player_id)
         if shortest_path_to_cell[cell.row][cell.col] == -1:
-            shortest_path_from_friend = self.shortest_path.get(self.get_friend_by_id(player_id))
+            shortest_path_from_friend = self.shortest_path.get(self.get_friend_by_id(from_player_id))
             if shortest_path_from_friend[cell.row][cell.col] == -1:
                 return None
-            return len(p.path_to_friend.cells) + shortest_path_from_friend[cell.row][cell.col]
+            return shortest_path_from_friend[cell.row][cell.col]
 
         return shortest_path_to_cell[cell.row][cell.col]
 
@@ -431,11 +432,19 @@ class World(ABC):
     #     return player.king.hp
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
-    def cast_unit_spell(self, unit_id, path_id, cell, spell=None, spell_id=None):
+    def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
+                        spell=None,
+                        spell_id=None):
         if spell is None and spell_id is None:
             return None
         if spell is None:
             spell = self.get_spell_by_type_id(spell_id)
+        if row is not None and col is not None:
+            cell = Cell(row, col)
+        if unit is not None:
+            unit_id = unit.unit_id
+        if path is not None:
+            path_id = path.path_id
         message = Message(type="castSpell", turn=self.get_current_turn(),
                           info={
                               "typeId": spell.type,
