@@ -6,11 +6,6 @@ from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUp
     CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget
 
 
-#################### Soalat?
-# queue chie tuye world
-# chera inhamme argument ezafi dare world
-
-
 class World(ABC):
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
