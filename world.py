@@ -6,11 +6,6 @@ from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUp
     CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget
 
 
-#################### Soalat?
-# queue chie tuye world
-# chera inhamme argument ezafi dare world
-
-
 class World(ABC):
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
@@ -102,14 +97,16 @@ class World(ABC):
 
         paths = [Path(id=path["id"], cells=[input_cells[cell["row"]][cell["col"]] for cell in path["cells"]]
                       ) for path in map_msg["paths"]]
-        kings = [King(player_id=king["playerId"], center=input_cells[king["center"]["row"]][king["center"]["col"]], hp=king["hp"],
+        kings = [King(player_id=king["playerId"], center=input_cells[king["center"]["row"]][king["center"]["col"]],
+                      hp=king["hp"],
                       attack=king["attack"], range=king["range"], target=None, target_cell=None, is_alive=True)
                  for king in map_msg["kings"]]
 
         self.players = [Player(player_id=map_msg["kings"][i]["playerId"], king=kings[i], deck=[],
                                hand=[], ap=self.game_constants.max_ap,
                                paths_from_player=self._get_paths_starting_with(kings[i].center, paths),
-                               path_to_friend=self._find_path_starting_and_ending_with(kings[i].center, kings[i^1].center, paths),
+                               path_to_friend=self._find_path_starting_and_ending_with(kings[i].center,
+                                                                                       kings[i ^ 1].center, paths),
                                units=[], cast_area_spell=None, cast_unit_spell=None,
                                duplicate_units=[],
                                hasted_units=[],
@@ -176,7 +173,8 @@ class World(ABC):
         for king_msg in msg:
             hp = king_msg["hp"] if (king_msg["hp"] > 0 and king_msg["isAlive"]) else -1
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
-            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"] if king_msg["target"] != -1 else None
+            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"] if king_msg[
+                                                                                                "target"] != -1 else None
 
     def _handle_turn_units(self, msg, is_dead_unit=False):
         if not is_dead_unit:
@@ -213,8 +211,10 @@ class World(ABC):
                         attack=unit_msg["attack"],
                         target=unit_msg["target"],
                         target_cell=target_cell,
-                        affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in unit_msg["affectedSpells"]],
-                        target_if_king=None if self.get_player_by_id(unit_msg["target"]) == None else self.get_player_by_id(unit_msg["target"]).king,
+                        affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in
+                                         unit_msg["affectedSpells"]],
+                        target_if_king=None if self.get_player_by_id(
+                            unit_msg["target"]) == None else self.get_player_by_id(unit_msg["target"]).king,
                         player_id=unit_msg["playerId"])
             if not is_dead_unit:
                 self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
@@ -292,10 +292,10 @@ class World(ABC):
         def path_count(path):
             shortest_path_to_cell = []
             shortest_path_to_cell_num = []
-            for i in range(self.map.row_count):
+            for i in range(self.map.row_num):
                 l = []
                 s = []
-                for j in range(self.map.column_count):
+                for j in range(self.map.column_num):
                     l.append(-1)
                     s.append(-1)
                 shortest_path_to_cell.append(l)
@@ -313,12 +313,12 @@ class World(ABC):
             return shortest_path_to_cell
 
         for p in self.players:
-            paths = self.get_paths_from_player(p.player_id)
+            paths = p.paths_from_player
             for i in range(len(paths)):
                 self.shortest_path.update({p.player_id: path_count(paths[i])})
+            self.shortest_path.update({p.player_id: path_count(p.path_to_friend)})
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-
     def choose_deck(self, type_ids=None, base_units=None):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
@@ -383,18 +383,22 @@ class World(ABC):
     # return the shortest path from player_id fortress to cell
     # this path is in the available path list
     # path may cross from friend
-    def get_shortest_path_to_cell(self, player_id, cell=None, row=None, col=None):
+    def get_shortest_path_to_cell(self, from_player_id=None, from_player=None, cell=None, row=None, col=None):
         if len(list(self.shortest_path.values())) == 0:
             self._pre_process_shortest_path()
-
+        if from_player is not None:
+            from_player_id = from_player.player_id
         if cell is None:
             if row is None or col is None:
                 return
             cell = self.map.get_cell(row, col)
 
-        shortest_path_to_cell = self.shortest_path.get(player_id)
+        shortest_path_to_cell = self.shortest_path.get(from_player_id)
         if shortest_path_to_cell[cell.row][cell.col] == -1:
-            return None
+            shortest_path_from_friend = self.shortest_path.get(self.get_friend_by_id(from_player_id))
+            if shortest_path_from_friend[cell.row][cell.col] == -1:
+                return None
+            return shortest_path_from_friend[cell.row][cell.col]
 
         return shortest_path_to_cell[cell.row][cell.col]
 
@@ -424,11 +428,19 @@ class World(ABC):
     #     return player.king.hp
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
-    def cast_unit_spell(self, unit_id, path_id, cell, spell=None, spell_id=None):
+    def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
+                        spell=None,
+                        spell_id=None):
         if spell is None and spell_id is None:
             return None
         if spell is None:
             spell = self.get_spell_by_type_id(spell_id)
+        if row is not None and col is not None:
+            cell = Cell(row, col)
+        if unit is not None:
+            unit_id = unit.unit_id
+        if path is not None:
+            path_id = path.path_id
         message = Message(type="castSpell", turn=self.get_current_turn(),
                           info={
                               "typeId": spell.type,
@@ -473,8 +485,8 @@ class World(ABC):
         if center is None:
             center = Cell(row, col)
         ls = []
-        for i in range(max(0, center.row - spell.range), min(center.row + spell.range, self.map.row_count)):
-            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self.map.column_count)):
+        for i in range(max(0, center.row - spell.range), min(center.row + spell.range, self.map.row_num)):
+            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self.map.column_num)):
                 cell = self.map.get_cell(i, j)
                 for u in cell.units:
                     if self._is_unit_targeted(u, spell.target):
@@ -576,7 +588,7 @@ class World(ABC):
     def _get_paths_starting_with(self, first, paths):
         ret = []
         for path in paths:
-            c_path = Path(path = path)
+            c_path = Path(path=path)
             if c_path.cells[-1] == first:
                 c_path.cells.reverse()
             if c_path.cells[0] == first:
