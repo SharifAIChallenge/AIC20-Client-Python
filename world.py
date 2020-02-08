@@ -489,8 +489,8 @@ class World(ABC):
         if center is None:
             center = Cell(row, col)
         ls = []
-        for i in range(max(0, center.row - spell.range), min(center.row + spell.range, self.map.row_count)):
-            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self.map.column_count)):
+        for i in range(max(0, center.row - spell.range), min(center.row + spell.range, self.map.row_num)):
+            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self.map.column_num)):
                 cell = self.map.get_cell(i, j)
                 for u in cell.units:
                     if self._is_unit_targeted(u, spell.target):
