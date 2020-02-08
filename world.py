@@ -296,10 +296,10 @@ class World(ABC):
         def path_count(path):
             shortest_path_to_cell = []
             shortest_path_to_cell_num = []
-            for i in range(self.map.row_count):
+            for i in range(self.map.row_num):
                 l = []
                 s = []
-                for j in range(self.map.column_count):
+                for j in range(self.map.column_num):
                     l.append(-1)
                     s.append(-1)
                 shortest_path_to_cell.append(l)
