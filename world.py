@@ -284,6 +284,7 @@ class World(ABC):
 
         self.player.set_spells([self.get_spell_by_id(spell_id=spell_id) for spell_id in msg["mySpells"]])
         self.player_friend.set_spells([self.get_spell_by_id(spell_id=spell_id) for spell_id in msg["friendSpells"]])
+        self.player.ap = msg["remainingAP"]
 
         self.start_time = self.get_current_time_millis()
 
