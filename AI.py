@@ -1,5 +1,5 @@
 class AI:
-    # this function is called in the beginning for deck picking and preprocess
+    # this function is called in the beginning for deck picking and pre process
     def pick(self, world):
         print("pick")
         # self.path_to_friend_check(world)
@@ -35,6 +35,8 @@ class AI:
             print("its turn 2!!!")
             world.put_unit(base_unit=world.get_me().hand[0], path=world.get_me().paths_from_player[0])
 
-    #
+    # it is called after the game ended and it does not affect the game.
+    # using this function you can access the result of the game.
+    # scores is a map from int to int which the key is player_id and value is player_score
     def end(self, world, scores):
         print("ending")
