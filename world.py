@@ -37,7 +37,6 @@ class World(ABC):
             self.spells = world.spells
             self.current_turn = world.current_turn
 
-            self.shortest_path = dict()
             self.players = world.players
             self.player = world.player
             self.player_friend = world.player_friend
@@ -126,6 +125,7 @@ class World(ABC):
 
         self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
 
+    # returns unit in map with a unit_id
     def get_unit_by_id(self, unit_id):
         for unit in self.map.units:
             if unit.unit_id == unit_id:
@@ -288,36 +288,6 @@ class World(ABC):
 
         self.start_time = self.get_current_time_millis()
 
-    def _pre_process_shortest_path(self):
-        def path_count(path):
-            shortest_path_to_cell = []
-            shortest_path_to_cell_num = []
-            for i in range(self.map.row_num):
-                l = []
-                s = []
-                for j in range(self.map.column_num):
-                    l.append(-1)
-                    s.append(-1)
-                shortest_path_to_cell.append(l)
-                shortest_path_to_cell_num.append(s)
-
-            count = 0
-            for i in path.cells:
-                if shortest_path_to_cell_num[i.row][i.col] == -1:
-                    shortest_path_to_cell_num[i.row][i.col] = count
-                    shortest_path_to_cell[i.row][i.col] = path
-                elif shortest_path_to_cell_num[i.row][i.col] > count:
-                    shortest_path_to_cell_num[i.row][i.col] = count
-                    shortest_path_to_cell[i.row][i.col] = path
-                count += 1
-            return shortest_path_to_cell
-
-        for p in self.players:
-            paths = p.paths_from_player
-            for i in range(len(paths)):
-                self.shortest_path.update({p.player_id: path_count(paths[i])})
-            self.shortest_path.update({p.player_id: path_count(p.path_to_friend)})
-
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_deck(self, type_ids=None, base_units=None):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
@@ -384,23 +354,40 @@ class World(ABC):
     # this path is in the available path list
     # path may cross from friend
     def get_shortest_path_to_cell(self, from_player_id=None, from_player=None, cell=None, row=None, col=None):
-        if len(list(self.shortest_path.values())) == 0:
-            self._pre_process_shortest_path()
+        def path_count(paths):
+            shortest_path = None
+            count = 0
+            for p in paths:
+                count_num = 0
+                for c in p.cells:
+                    if c == cell:
+                        if shortest_path is None:
+                            count = count_num
+                            shortest_path = p
+
+                        elif count_num < count:
+                            count = count_num
+                            shortest_path = p
+                    count_num += 1
+
+                return shortest_path
+
         if from_player is not None:
             from_player_id = from_player.player_id
         if cell is None:
             if row is None or col is None:
                 return
             cell = self.map.get_cell(row, col)
-
-        shortest_path_to_cell = self.shortest_path.get(from_player_id)
-        if shortest_path_to_cell[cell.row][cell.col] == -1:
-            shortest_path_from_friend = self.shortest_path.get(self.get_friend_by_id(from_player_id))
-            if shortest_path_from_friend[cell.row][cell.col] == -1:
-                return None
-            return shortest_path_from_friend[cell.row][cell.col]
-
-        return shortest_path_to_cell[cell.row][cell.col]
+        p = path_count(self.get_player_by_id(from_player_id).paths_from_player)
+        if p is None:
+            ptf = path_count(self.get_player_by_id(from_player_id).path_to_friend)
+            if ptf is None:
+                pff = path_count(self.get_friend_by_id(from_player_id).paths_from_player)
+                if pff is None:
+                    return None
+                return pff
+            return ptf
+        return p
 
     # place unit with type_id in path_id
     def put_unit(self, type_id=None, path_id=None, base_unit=None, path=None):
@@ -539,7 +526,7 @@ class World(ABC):
         if unit is not None:
             unit_id = unit.unit_id
 
-        elif unit_id is not None:
+        if unit_id is not None:
             self.queue.put(Message(type="rangeUpgrade",
                                    turn=self.get_current_turn(),
                                    info={
@@ -550,7 +537,7 @@ class World(ABC):
         if unit is not None:
             unit_id = unit.unit_id
 
-        elif unit_id is not None:
+        if unit_id is not None:
             self.queue.put(Message(type="damageUpgrade",
                                    turn=self.get_current_turn(),
                                    info={
