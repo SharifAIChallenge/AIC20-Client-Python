@@ -493,7 +493,7 @@ class World(ABC):
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
-        return self.game_constants.turns_to_upgrade - self.current_turn
+        return (self.game_constants.turns_to_upgrade - self.current_turn) % self.game_constants.turns_to_upgrade
 
     # every once in a while a spell is given this remains the remaining time to get new spell
     def get_remaining_turns_to_get_spell(self):
