@@ -409,11 +409,6 @@ class World(ABC):
     def get_current_turn(self):
         return self.current_turn
 
-    # returns the health point remaining for each player
-    # def get_player_hp(self, player_id):
-    #     player = self.get_player_by_id(player_id)
-    #     return player.king.hp
-
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
                         spell=None,
@@ -467,7 +462,9 @@ class World(ABC):
         if spell is None:
             if type_id is not None:
                 spell = self.get_cast_spell_by_id(type_id)
-        if not spell.is_area_spell:
+            else:
+                return []
+        if not spell.is_area_spell():
             return []
         if center is None:
             center = Cell(row, col)
@@ -493,34 +490,34 @@ class World(ABC):
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
-        return (self.game_constants.turns_to_upgrade - self.current_turn) % self.game_constants.turns_to_upgrade
+        rem_turn = (self.game_constants.turns_to_upgrade - self.current_turn) % self.game_constants.turns_to_upgrade
+        if rem_turn == 0:
+            return self.game_constants.turns_to_upgrade
+        return rem_turn
 
     # every once in a while a spell is given this remains the remaining time to get new spell
     def get_remaining_turns_to_get_spell(self):
-        return (self.game_constants.turns_to_spell - self.current_turn) % self.game_constants.turns_to_spell
+        rem_turn = (self.game_constants.turns_to_spell - self.current_turn) % self.game_constants.turns_to_spell
+        if rem_turn == 0:
+            return self.game_constants.turns_to_spell
+        return rem_turn
 
     # returns a list of spells casted on a cell
-    def get_range_upgrade_number(self, player_id):
+    def get_range_upgrade_number(self):
         return self.turn_updates.available_range_upgrade
 
-    def get_damage_upgrade_number(self, player_id):
+    def get_damage_upgrade_number(self):
         return self.turn_updates.available_damage_upgrade
 
     # returns the spell given in that turn
     def get_received_spell(self):
-        spell_type_id = self.turn_updates.received_spell
-        if spell_type_id == -1:
-            return None
-        else:
-            return self.get_spell_by_type_id(spell_type_id)
+        spell = self.turn_updates.received_spell
+        return spell
 
     # returns the spell given in that turn to friend
     def get_friend_received_spell(self):
-        spell_type_id = self.turn_updates.friend_received_spell
-        if spell_type_id == -1:
-            return None
-        else:
-            return self.get_spell_by_type_id(spell_type_id)
+        spell = self.turn_updates.friend_received_spell
+        return spell
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
         if unit is not None:
