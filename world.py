@@ -493,11 +493,11 @@ class World(ABC):
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
-        return self.game_constants.turns_to_upgrade
+        return self.game_constants.turns_to_upgrade - self.current_turn
 
     # every once in a while a spell is given this remains the remaining time to get new spell
     def get_remaining_turns_to_get_spell(self):
-        return self.game_constants.turns_to_spell
+        return (self.game_constants.turns_to_spell - self.current_turn) % self.game_constants.turns_to_spell
 
     # returns a list of spells casted on a cell
     def get_range_upgrade_number(self, player_id):
