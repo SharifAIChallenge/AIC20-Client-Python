@@ -369,8 +369,7 @@ class World(ABC):
                             count = count_num
                             shortest_path = p
                     count_num += 1
-
-                return shortest_path
+            return shortest_path
 
         if from_player is not None:
             from_player_id = from_player.player_id
@@ -380,7 +379,8 @@ class World(ABC):
             cell = self.map.get_cell(row, col)
         p = path_count(self.get_player_by_id(from_player_id).paths_from_player)
         if p is None:
-            ptf = path_count(self.get_player_by_id(from_player_id).path_to_friend)
+            ls = [self.get_player_by_id(from_player_id).path_to_friend]
+            ptf = path_count(ls)
             if ptf is None:
                 pff = path_count(self.get_friend_by_id(from_player_id).paths_from_player)
                 if pff is None:

@@ -21,19 +21,15 @@ class AI:
 
     # it is called every turn for doing process during the game
     def turn(self, world):
-        print("turn")
-        if world.get_current_turn() == 26:
-            print("turn 26 baby!")
-            print(len(world.get_me().get_spells()))
-            for spell in world.get_me().get_spells():
-                print(spell)
-                print(world.get_me().get_spell_count(spell))
-                print("---")
-            world.cast_area_spell(row=4, col=12, spell=world.get_me().get_spells()[0])
+        myp = world.get_me()
+        fir = world.get_friend()
 
-        if world.get_current_turn() == 20:
-            print("its turn 2!!!")
-            world.put_unit(base_unit=world.get_me().hand[0], path=world.get_me().paths_from_player[0])
+        try:
+            print(world.get_shortest_path_to_cell(from_player=myp, cell=fir.paths_from_player[0].cells[3]))
+        except Exception as e:
+            print(e)
+
+        print("turn")
 
     # it is called after the game ended and it does not affect the game.
     # using this function you can access the result of the game.
