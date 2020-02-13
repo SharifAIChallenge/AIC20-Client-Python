@@ -37,7 +37,6 @@ class World(ABC):
             self.spells = world.spells
             self.current_turn = world.current_turn
 
-            self.shortest_path = dict()
             self.players = world.players
             self.player = world.player
             self.player_friend = world.player_friend
@@ -126,6 +125,7 @@ class World(ABC):
 
         self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
 
+    # returns unit in map with a unit_id
     def get_unit_by_id(self, unit_id):
         for unit in self.map.units:
             if unit.unit_id == unit_id:
@@ -288,36 +288,6 @@ class World(ABC):
 
         self.start_time = self.get_current_time_millis()
 
-    def _pre_process_shortest_path(self):
-        def path_count(path):
-            shortest_path_to_cell = []
-            shortest_path_to_cell_num = []
-            for i in range(self.map.row_num):
-                l = []
-                s = []
-                for j in range(self.map.column_num):
-                    l.append(-1)
-                    s.append(-1)
-                shortest_path_to_cell.append(l)
-                shortest_path_to_cell_num.append(s)
-
-            count = 0
-            for i in path.cells:
-                if shortest_path_to_cell_num[i.row][i.col] == -1:
-                    shortest_path_to_cell_num[i.row][i.col] = count
-                    shortest_path_to_cell[i.row][i.col] = path
-                elif shortest_path_to_cell_num[i.row][i.col] > count:
-                    shortest_path_to_cell_num[i.row][i.col] = count
-                    shortest_path_to_cell[i.row][i.col] = path
-                count += 1
-            return shortest_path_to_cell
-
-        for p in self.players:
-            paths = p.paths_from_player
-            for i in range(len(paths)):
-                self.shortest_path.update({p.player_id: path_count(paths[i])})
-            self.shortest_path.update({p.player_id: path_count(p.path_to_friend)})
-
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_deck(self, type_ids=None, base_units=None):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
@@ -384,23 +354,40 @@ class World(ABC):
     # this path is in the available path list
     # path may cross from friend
     def get_shortest_path_to_cell(self, from_player_id=None, from_player=None, cell=None, row=None, col=None):
-        if len(list(self.shortest_path.values())) == 0:
-            self._pre_process_shortest_path()
+        def path_count(paths):
+            shortest_path = None
+            count = 0
+            for p in paths:
+                count_num = 0
+                for c in p.cells:
+                    if c == cell:
+                        if shortest_path is None:
+                            count = count_num
+                            shortest_path = p
+
+                        elif count_num < count:
+                            count = count_num
+                            shortest_path = p
+                    count_num += 1
+            return shortest_path
+
         if from_player is not None:
             from_player_id = from_player.player_id
         if cell is None:
             if row is None or col is None:
                 return
             cell = self.map.get_cell(row, col)
-
-        shortest_path_to_cell = self.shortest_path.get(from_player_id)
-        if shortest_path_to_cell[cell.row][cell.col] == -1:
-            shortest_path_from_friend = self.shortest_path.get(self.get_friend_by_id(from_player_id))
-            if shortest_path_from_friend[cell.row][cell.col] == -1:
-                return None
-            return shortest_path_from_friend[cell.row][cell.col]
-
-        return shortest_path_to_cell[cell.row][cell.col]
+        p = path_count(self.get_player_by_id(from_player_id).paths_from_player)
+        if p is None:
+            ls = [self.get_player_by_id(from_player_id).path_to_friend]
+            ptf = path_count(ls)
+            if ptf is None:
+                pff = path_count(self.get_friend_by_id(from_player_id).paths_from_player)
+                if pff is None:
+                    return None
+                return pff
+            return ptf
+        return p
 
     # place unit with type_id in path_id
     def put_unit(self, type_id=None, path_id=None, base_unit=None, path=None):
@@ -421,11 +408,6 @@ class World(ABC):
     # return the number of turns passed
     def get_current_turn(self):
         return self.current_turn
-
-    # returns the health point remaining for each player
-    # def get_player_hp(self, player_id):
-    #     player = self.get_player_by_id(player_id)
-    #     return player.king.hp
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
@@ -480,7 +462,9 @@ class World(ABC):
         if spell is None:
             if type_id is not None:
                 spell = self.get_cast_spell_by_id(type_id)
-        if not spell.is_area_spell:
+            else:
+                return []
+        if not spell.is_area_spell():
             return []
         if center is None:
             center = Cell(row, col)
@@ -506,40 +490,40 @@ class World(ABC):
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self):
-        return self.game_constants.turns_to_upgrade
+        rem_turn = (self.game_constants.turns_to_upgrade - self.current_turn) % self.game_constants.turns_to_upgrade
+        if rem_turn == 0:
+            return self.game_constants.turns_to_upgrade
+        return rem_turn
 
     # every once in a while a spell is given this remains the remaining time to get new spell
     def get_remaining_turns_to_get_spell(self):
-        return self.game_constants.turns_to_spell
+        rem_turn = (self.game_constants.turns_to_spell - self.current_turn) % self.game_constants.turns_to_spell
+        if rem_turn == 0:
+            return self.game_constants.turns_to_spell
+        return rem_turn
 
     # returns a list of spells casted on a cell
-    def get_range_upgrade_number(self, player_id):
+    def get_range_upgrade_number(self):
         return self.turn_updates.available_range_upgrade
 
-    def get_damage_upgrade_number(self, player_id):
+    def get_damage_upgrade_number(self):
         return self.turn_updates.available_damage_upgrade
 
     # returns the spell given in that turn
     def get_received_spell(self):
-        spell_type_id = self.turn_updates.received_spell
-        if spell_type_id == -1:
-            return None
-        else:
-            return self.get_spell_by_type_id(spell_type_id)
+        spell = self.turn_updates.received_spell
+        return spell
 
     # returns the spell given in that turn to friend
     def get_friend_received_spell(self):
-        spell_type_id = self.turn_updates.friend_received_spell
-        if spell_type_id == -1:
-            return None
-        else:
-            return self.get_spell_by_type_id(spell_type_id)
+        spell = self.turn_updates.friend_received_spell
+        return spell
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
         if unit is not None:
             unit_id = unit.unit_id
 
-        elif unit_id is not None:
+        if unit_id is not None:
             self.queue.put(Message(type="rangeUpgrade",
                                    turn=self.get_current_turn(),
                                    info={
@@ -550,7 +534,7 @@ class World(ABC):
         if unit is not None:
             unit_id = unit.unit_id
 
-        elif unit_id is not None:
+        if unit_id is not None:
             self.queue.put(Message(type="damageUpgrade",
                                    turn=self.get_current_turn(),
                                    info={
