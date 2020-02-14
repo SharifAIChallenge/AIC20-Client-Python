@@ -324,11 +324,6 @@ class GameConstants:
         self.deck_size = deck_size
         self.hand_size = hand_size
 
-        # if World.DEBUGGING_MODE:
-        #     import datetime
-        #     World.LOG_FILE_POINTER = open('client' + '-' +
-        #                                   datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S.%f") + '.log', 'w+')
-
 
 class TurnUpdates:
     def __init__(self, received_spell=None, friend_received_spell=None,
@@ -347,5 +342,4 @@ class TurnUpdates:
             self.got_damage_upgrade = turn_updates.got_damage_upgrade
             self.available_damage_upgrade = turn_updates.available_damage_upgrades
             self.available_range_upgrade = turn_updates.available_range_upgrades
-        turn_updates.received_spell = None
-        turn_updates.friend_received_spell = None
+        turn_updates = None

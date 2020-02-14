@@ -160,10 +160,6 @@ class World(ABC):
                        for spell in msg]
 
     def _handle_init_message(self, msg):
-        # if World.DEBUGGING_MODE:
-        #     if World.LOG_FILE_POINTER is not None:
-        #         World.LOG_FILE_POINTER.write(str(msg))
-        #         World.LOG_FILE_POINTER.write('\n')
         self._game_constant_init(msg['gameConstants'])
         self._map_init(msg["map"])
         self._base_unit_init(msg["baseUnits"])
@@ -336,11 +332,6 @@ class World(ABC):
             if cell in p.cells:
                 paths.append(p)
         return paths
-
-    # # return units of player that are currently in map
-    # def get_player_units(self, player_id):
-    #     player = self.get_player_by_id(player_id)
-    #     return player.units
 
     # return a list of units in a cell
     def get_cell_units(self, cell=None, row=None, col=None):

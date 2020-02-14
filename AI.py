@@ -61,7 +61,7 @@ class AI:
                 if len(my_units) > 0:
                     unit = my_units[0]
                     my_paths = myself.paths_from_player
-                    path =  my_paths[random.randint(0, len(my_paths) - 1)]
+                    path = my_paths[random.randint(0, len(my_paths) - 1)]
                     size = len(path.cells)
                     cell = path.cells[(size + 1) / 2]
                     world.cast_unit_spell(unit=unit, path=path, cell=cell, spell=received_spell)
@@ -78,4 +78,3 @@ class AI:
     def end(self, world, scores):
         print("end started!")
         print("My score: " + scores[world.get_me().player_id])
-
