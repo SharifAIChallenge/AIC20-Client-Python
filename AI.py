@@ -23,7 +23,7 @@ class AI:
         my_deck = [base_unit for base_unit in all_base_units if base_unit.is_flying]
 
         # picking the chosen deck - rest of the deck will automatically be filled with random base_units
-        world.choose_deck(my_deck)
+        world.choose_deck(base_units=my_deck)
 
         # other preprocess
         self.path_for_my_units = world.get_friend().paths_from_player[0]
