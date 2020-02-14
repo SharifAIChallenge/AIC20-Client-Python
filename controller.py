@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import traceback
 from queue import Queue
 from threading import Thread
 
@@ -49,7 +50,8 @@ class Controller:
             action(world)
         except Exception as e:
             print("Error in client:")
-            print(e)
+            traceback.print_exc()
+            #print(e)
         world.queue.put(Message(type=ServerConstants.MESSAGE_TYPE_END_TURN, turn=world.current_turn, info={}))
 
     def start(self):
