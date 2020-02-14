@@ -63,7 +63,7 @@ class AI:
                      my_paths = myself.paths_from_player
                      path = my_paths[random.randint(0, len(my_paths) - 1)]
                      size = len(path.cells)
-                     cell = path.cells[(size + 1) / 2]
+                     cell = path.cells[int((size + 1) / 2)]
                      world.cast_unit_spell(unit=unit, path=path, cell=cell, spell=received_spell)
 
         # this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range

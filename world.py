@@ -413,10 +413,10 @@ class World(ABC):
         if unit is not None:
             unit_id = unit.unit_id
         if path is not None:
-            path_id = path.path_id
+            path_id = path.id
         message = Message(type="castSpell", turn=self.get_current_turn(),
                           info={
-                              "typeId": spell.type,
+                              "typeId": spell.type_id,
                               "cell": {
                                   "row": cell.row,
                                   "col": cell.col
