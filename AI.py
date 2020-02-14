@@ -30,7 +30,7 @@ class AI:
 
     # it is called every turn for doing process during the game
     def turn(self, world):
-        print("turn started: " + str(world.get_current_turn()))
+        print("turn started:", world.get_current_turn())
 
         myself = world.get_me()
         max_ap = world.game_constants.max_ap
@@ -77,4 +77,4 @@ class AI:
     # scores is a map from int to int which the key is player_id and value is player_score
     def end(self, world, scores):
         print("end started!")
-        print("My score: " ,scores[world.get_me().player_id])
+        print("My score:" ,scores[world.get_me().player_id])
