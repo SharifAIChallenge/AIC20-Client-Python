@@ -24,7 +24,7 @@ class World(ABC):
         self.player_friend = None
         self.player_first_enemy = None
         self.player_second_enemy = None
-        self.spells = None
+        self.spells = []
         self.cast_spells = []
 
         if world is not None:
@@ -503,13 +503,13 @@ class World(ABC):
     # returns the spell given in that turn
     def get_received_spell(self):
         spell_id = self.turn_updates.received_spell
-        spell = self.get_spell_by_id(spell_id)
+        spell = self.get_spell_by_type_id(spell_id)
         return spell
 
     # returns the spell given in that turn to friend
     def get_friend_received_spell(self):
         spell_id = self.turn_updates.friend_received_spell
-        spell = self.get_spell_by_id(spell_id)
+        spell = self.get_spell_by_type_id(spell_id)
         return spell
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
@@ -546,10 +546,10 @@ class World(ABC):
     def get_all_spells(self):
         return copy.deepcopy(self.spells)
 
-    def get_spell_by_id(self, spell_id):
-        for i in self.spells:
-            if spell_id == i.type_id:
-                return i
+    def get_king_by_id(self, player_id):
+        for p in self.players:
+            if p.player_id == player_id:
+                return p.king
 
         return None
 
