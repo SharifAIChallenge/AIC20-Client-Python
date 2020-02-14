@@ -47,24 +47,24 @@ class AI:
                 if received_spell.target == SpellTarget.ENEMY:
                     enemy_units = world.get_first_enemy().units
                     if len(enemy_units) > 0:
-                        world.cast_area_spell(enemy_units[0].cell, received_spell)
+                        world.cast_area_spell(center=enemy_units[0].cell, spell=received_spell)
                 elif received_spell.target == SpellTarget.ALLIED:
                     friend_units = world.get_friend().units
                     if len(friend_units) > 0:
-                        world.cast_area_spell(friend_units[0].cell, received_spell)
+                        world.cast_area_spell(center=friend_units[0].cell, spell=received_spell)
                 elif received_spell.target == SpellTarget.SELF:
                     my_units = myself.units
                     if len(my_units) > 0:
-                        world.cast_area_spell(my_units[0].cell, received_spell)
+                        world.cast_area_spell(center=my_units[0].cell, spell=received_spell)
             else:
                 my_units = myself.units
                 if len(my_units) > 0:
-                    unit = my_units[0]
-                    my_paths = myself.paths_from_player
-                    path = my_paths[random.randint(0, len(my_paths) - 1)]
-                    size = len(path.cells)
-                    cell = path.cells[(size + 1) / 2]
-                    world.cast_unit_spell(unit=unit, path=path, cell=cell, spell=received_spell)
+                     unit = my_units[0]
+                     my_paths = myself.paths_from_player
+                     path = my_paths[random.randint(0, len(my_paths) - 1)]
+                     size = len(path.cells)
+                     cell = path.cells[(size + 1) / 2]
+                     world.cast_unit_spell(unit=unit, path=path, cell=cell, spell=received_spell)
 
         # this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range
         if len(myself.units) > 0:
