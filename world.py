@@ -60,7 +60,7 @@ class World(ABC):
                 return player
         return None
 
-    def get_spell_by_type_id(self, type_id):
+    def get_spell_by_id(self, type_id):
         for spell in self.spells:
             if spell.type_id == type_id:
                 return spell
@@ -236,7 +236,7 @@ class World(ABC):
     def _handle_turn_cast_spells(self, msg):
         self.cast_spells = []
         for cast_spell_msg in msg:
-            spell = self.get_spell_by_type_id(cast_spell_msg["typeId"])
+            spell = self.get_spell_by_id(cast_spell_msg["typeId"])
             cell = self.map.get_cell(cast_spell_msg["cell"]["row"], cast_spell_msg["cell"]["col"])
             affected_units = [self.get_unit_by_id(affected_unit_id) for
                               affected_unit_id in
@@ -278,8 +278,8 @@ class World(ABC):
                                         available_range_upgrades=msg["availableRangeUpgrades"],
                                         available_damage_upgrades=msg["availableDamageUpgrades"])
 
-        self.player.set_spells([self.get_spell_by_id(spell_id=spell_id) for spell_id in msg["mySpells"]])
-        self.player_friend.set_spells([self.get_spell_by_id(spell_id=spell_id) for spell_id in msg["friendSpells"]])
+        self.player.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["mySpells"]])
+        self.player_friend.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["friendSpells"]])
         self.player.ap = msg["remainingAP"]
 
         self.start_time = self.get_current_time_millis()
@@ -407,7 +407,7 @@ class World(ABC):
         if spell is None and spell_id is None:
             return None
         if spell is None:
-            spell = self.get_spell_by_type_id(spell_id)
+            spell = self.get_spell_by_id(spell_id)
         if row is not None and col is not None:
             cell = Cell(row, col)
         if unit is not None:
@@ -429,7 +429,7 @@ class World(ABC):
     # cast spell in the cell 'center'
     def cast_area_spell(self, center=None, row=None, col=None, spell=None, spell_id=None):
         if spell is None:
-            spell = self.get_spell_by_type_id(spell_id)
+            spell = self.get_spell_by_id(spell_id)
         if row is not None and col is not None:
             center = self.map.get_cell(row, col)
 
@@ -503,13 +503,13 @@ class World(ABC):
     # returns the spell given in that turn
     def get_received_spell(self):
         spell_id = self.turn_updates.received_spell
-        spell = self.get_spell_by_type_id(spell_id)
+        spell = self.get_spell_by_id(spell_id)
         return spell
 
     # returns the spell given in that turn to friend
     def get_friend_received_spell(self):
         spell_id = self.turn_updates.friend_received_spell
-        spell = self.get_spell_by_type_id(spell_id)
+        spell = self.get_spell_by_id(spell_id)
         return spell
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
