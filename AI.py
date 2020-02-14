@@ -14,7 +14,7 @@ class AI:
         print("pick started!")
 
         # preprocess
-        map = world.map
+        map = world.get_map()
         self.rows = map.row_num
         self.cols = map.column_num
 
