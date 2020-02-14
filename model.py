@@ -347,3 +347,5 @@ class TurnUpdates:
             self.got_damage_upgrade = turn_updates.got_damage_upgrade
             self.available_damage_upgrade = turn_updates.available_damage_upgrades
             self.available_range_upgrade = turn_updates.available_range_upgrades
+        turn_updates.received_spell = None
+        turn_updates.friend_received_spell = None
