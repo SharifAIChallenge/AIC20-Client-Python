@@ -77,4 +77,4 @@ class AI:
     # scores is a map from int to int which the key is player_id and value is player_score
     def end(self, world, scores):
         print("end started!")
-        print("My score: " + scores[world.get_me().player_id])
+        print("My score: " ,scores[world.get_me().player_id])
