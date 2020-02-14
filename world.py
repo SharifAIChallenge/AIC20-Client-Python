@@ -502,12 +502,14 @@ class World(ABC):
 
     # returns the spell given in that turn
     def get_received_spell(self):
-        spell = self.turn_updates.received_spell
+        spell_id = self.turn_updates.received_spell
+        spell = self.get_spell_by_id(spell_id)
         return spell
 
     # returns the spell given in that turn to friend
     def get_friend_received_spell(self):
-        spell = self.turn_updates.friend_received_spell
+        spell_id = self.turn_updates.friend_received_spell
+        spell = self.get_spell_by_id(spell_id)
         return spell
 
     def upgrade_unit_range(self, unit=None, unit_id=None):
