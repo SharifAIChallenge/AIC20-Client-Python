@@ -48,11 +48,11 @@ class World(ABC):
         else:
             self.queue = queue
 
-    def get_current_time_millis(self):
+    def _get_current_time_millis(self):
         return int(round(time.time() * 1000))
 
-    def get_time_past(self):
-        return self.get_current_time_millis() - self.start_time
+    def _get_time_past(self):
+        return self._get_current_time_millis() - self.start_time
 
     def _game_constant_init(self, game_constants_msg):
         self.game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
@@ -111,7 +111,7 @@ class World(ABC):
         self.player_first_enemy = self.players[2]
         self.player_second_enemy = self.players[3]
 
-        self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
+        self.map = Map(row_num=row_num, col_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
 
     def _base_unit_init(self, msg):
         self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
@@ -263,7 +263,7 @@ class World(ABC):
         self.player_friend.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["friendSpells"]])
         self.player.ap = msg["remainingAP"]
 
-        self.start_time = self.get_current_time_millis()
+        self.start_time = self._get_current_time_millis()
 
     def choose_deck_by_id(self, type_ids):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
@@ -386,8 +386,7 @@ class World(ABC):
         return self.current_turn
 
     def get_remaining_time(self):
-        # TODO
-        pass
+        return self.game_constants.turn_timeout - self._get_time_past()
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
@@ -437,7 +436,6 @@ class World(ABC):
             self.queue.put(message)
 
     # returns a list of units the spell casts effects on
-    # NOT CORRECT!!! #
     def get_area_spell_targets(self, center, row=None, col=None, spell=None, type_id=None):
         if spell is None:
             if type_id is not None:
@@ -450,7 +448,7 @@ class World(ABC):
             center = Cell(row, col)
         ls = []
         for i in range(max(0, center.row - spell.range), min(center.row + spell.range, self.map.row_num)):
-            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self.map.column_num)):
+            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self.map.col_num)):
                 cell = self.map.get_cell(i, j)
                 for u in cell.units:
                     if self._is_unit_targeted(u, spell.target):
@@ -563,12 +561,6 @@ class World(ABC):
 
     def get_game_constants(self):
         return self.game_constants
-
-    def get_player_hasted_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.is_hasted > 0]
-
-    def get_player_played_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.was_played_this_turn]
 
     def _get_paths_starting_with(self, first, paths):
         ret = []
