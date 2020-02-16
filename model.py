@@ -2,17 +2,17 @@ from enum import Enum
 
 
 class Map:
-    def __init__(self, row_num, column_num, paths, units, kings, cells):
+    def __init__(self, row_num, col_num, paths, units, kings, cells):
         self.row_num = row_num
-        self.column_num = column_num
+        self.col_num = col_num
         self.paths = paths
         self.paths_dict = dict([(path.id, path) for path in paths])
         self.units = units
         self.kings = kings
         self.cells = cells
 
-    def get_cell(self, row, column):
-        return self.cells[row][column]
+    def get_cell(self, row, col):
+        return self.cells[row][col]
 
     def clear_units(self):
         for row in self.cells:
@@ -22,8 +22,8 @@ class Map:
     def get_path_by_id(self, path_id):
         return None if not path_id in self.paths_dict else self.paths_dict[path_id]
 
-    def add_unit_in_cell(self, row, column, unit):
-        self.cells[row][column].add_unit(unit)
+    def add_unit_in_cell(self, row, col, unit):
+        self.cells[row][col].add_unit(unit)
 
 
 class Player:

@@ -16,7 +16,7 @@ class AI:
         # pre process
         map = world.get_map()
         self.rows = map.row_num
-        self.cols = map.column_num
+        self.cols = map.col_num
 
         # choosing all flying units
         all_base_units = world.base_units
