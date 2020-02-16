@@ -1,7 +1,43 @@
-1. Download the latest version of the server and client.
-To run the server:
-2. Open terminal/cmd. Move to the folder of the server. Run the .jar file:
-	java -jar <filename>.jar
-3. Choose map to work with
-To run clients:
-4. Run main function in "controller.py" as the number of players in a game(4 times). Obviously you can run different clients.
+# Requirements 
+
+## Build
+
+After implementing your code in `AI.py`, you may need to run it. 
+Below are the instructions to build and execute the client project.
+
+### Using Command Line
+
+To fetch and build the project use the following commands:
+
+```
+cd <path to working directory>
+git clone --depth=1 https://github.com/SharifAIChallenge/AIC20-Client-Cpp
+cd AIC20-Client-Python
+```
+
+Now you have to run the server ".jar" file and then you should `controller.py` 4 times. Each time you run controller a new client connects to the game. You can implement different AIs for different clients and run their controllers seperately.
+
+### Using Pycharm
+
+You can download Jetbrains Pycharm from this link.
+
+This IDE allows quick and easier usage.
+
+1) Run the server using the command line located below the page in Pycharm:
+```
+cd your_server_directory/
+java -jar server_jar_file.jar
+```
+
+2) Run `controller.py` by right clicking and choosing `Run 'controller'` option:
+
+3) Allo parallel runs: 
+* Click on the configuration of python
+* Choose `edit Configurations`
+* Click the check box with label `Allow parallel run`
+* run the controller again for four times
+
+# Multiple codes
+
+For multiple codes you can copy the rest of the client source code and simply change the `AI.py` file as you will. Then run the controller for each source code
+
