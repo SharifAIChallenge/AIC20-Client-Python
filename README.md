@@ -37,7 +37,7 @@ java -jar server_jar_file.jar
 * Click the check box with label `Allow parallel run`
 * run the controller again for four times
 
-# Multiple codes
+## Multiple codes
 
 For multiple codes you can copy the rest of the client source code and simply change the `AI.py` file as you will. Then run the controller for each source code
 
