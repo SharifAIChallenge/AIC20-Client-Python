@@ -51,7 +51,7 @@ class Controller:
         except Exception as e:
             print("Error in client:")
             traceback.print_exc()
-            #print(e)
+            # print(e)
         world.queue.put(Message(type=ServerConstants.MESSAGE_TYPE_END_TURN, turn=world.current_turn, info={}))
 
     def start(self):
