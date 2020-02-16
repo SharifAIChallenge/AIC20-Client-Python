@@ -54,18 +54,6 @@ class World(ABC):
     def get_time_past(self):
         return self.get_current_time_millis() - self.start_time
 
-    def get_player_by_id(self, player_id):
-        for player in self.players:
-            if player.player_id == player_id:
-                return player
-        return None
-
-    def get_spell_by_id(self, type_id):
-        for spell in self.spells:
-            if spell.type_id == type_id:
-                return spell
-        return None
-
     def _game_constant_init(self, game_constants_msg):
         self.game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
                                             max_turns=game_constants_msg["maxTurns"],
@@ -124,13 +112,6 @@ class World(ABC):
         self.player_second_enemy = self.players[3]
 
         self.map = Map(row_num=row_num, column_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
-
-    # returns unit in map with a unit_id
-    def get_unit_by_id(self, unit_id):
-        for unit in self.map.units:
-            if unit.unit_id == unit_id:
-                return unit
-        return None
 
     def _base_unit_init(self, msg):
         self.base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
@@ -210,7 +191,7 @@ class World(ABC):
                         affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in
                                          unit_msg["affectedSpells"]],
                         target_if_king=None if self.get_player_by_id(
-                            unit_msg["target"]) == None else self.get_player_by_id(unit_msg["target"]).king,
+                            unit_msg["target"]) is None else self.get_player_by_id(unit_msg["target"]).king,
                         player_id=unit_msg["playerId"])
             if not is_dead_unit:
                 self.map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
@@ -228,7 +209,7 @@ class World(ABC):
             else:
                 player.died_units.append(unit)
         for unit in self.map.units:
-            if unit.target == -1 or unit.target_if_king != None:
+            if unit.target == -1 or unit.target_if_king is not None:
                 unit.target = None
             else:
                 unit.target = self.map.get_unit_by_id(unit.target)
@@ -284,14 +265,18 @@ class World(ABC):
 
         self.start_time = self.get_current_time_millis()
 
-    # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-    def choose_deck(self, type_ids=None, base_units=None):
+    def choose_deck_by_id(self, type_ids):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
             message.info = {"units": type_ids}
-        elif base_units is not None:
+            self.queue.put(message)
+
+    # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
+    def choose_deck(self, base_units):
+        message = Message(type="pick", turn=self.get_current_turn(), info=None)
+        if base_units is not None:
             message.info = {"units": [unit.type_id for unit in base_units]}
-        self.queue.put(message)
+            self.queue.put(message)
 
     def get_me(self):
         return self.player
@@ -399,6 +384,10 @@ class World(ABC):
     # return the number of turns passed
     def get_current_turn(self):
         return self.current_turn
+
+    def get_remaining_time(self):
+        # TODO
+        pass
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
@@ -534,12 +523,6 @@ class World(ABC):
                                        "unitId": unit_id
                                    }))
 
-    def get_player_hasted_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.is_hasted > 0]
-
-    def get_player_played_units(self, player_id):
-        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.was_played_this_turn]
-
     def get_all_base_unit(self):
         return copy.deepcopy(self.base_units)
 
@@ -559,8 +542,33 @@ class World(ABC):
                 return bu
         return None
 
+    # returns unit in map with a unit_id
+    def get_unit_by_id(self, unit_id):
+        for unit in self.map.units:
+            if unit.unit_id == unit_id:
+                return unit
+        return None
+
+    def get_player_by_id(self, player_id):
+        for player in self.players:
+            if player.player_id == player_id:
+                return player
+        return None
+
+    def get_spell_by_id(self, type_id):
+        for spell in self.spells:
+            if spell.type_id == type_id:
+                return spell
+        return None
+
     def get_game_constants(self):
         return self.game_constants
+
+    def get_player_hasted_units(self, player_id):
+        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.is_hasted > 0]
+
+    def get_player_played_units(self, player_id):
+        return [unit for unit in self.get_player_by_id(player_id=player_id).units if unit.was_played_this_turn]
 
     def _get_paths_starting_with(self, first, paths):
         ret = []

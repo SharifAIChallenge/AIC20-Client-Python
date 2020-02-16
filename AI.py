@@ -13,7 +13,7 @@ class AI:
     def pick(self, world):
         print("pick started!")
 
-        # preprocess
+        # pre process
         map = world.get_map()
         self.rows = map.row_num
         self.cols = map.column_num
@@ -25,7 +25,7 @@ class AI:
         # picking the chosen deck - rest of the deck will automatically be filled with random base_units
         world.choose_deck(base_units=my_deck)
 
-        # other preprocess
+        # other pre process
         self.path_for_my_units = world.get_friend().paths_from_player[0]
 
     # it is called every turn for doing process during the game
@@ -59,12 +59,12 @@ class AI:
             else:
                 my_units = myself.units
                 if len(my_units) > 0:
-                     unit = my_units[0]
-                     my_paths = myself.paths_from_player
-                     path = my_paths[random.randint(0, len(my_paths) - 1)]
-                     size = len(path.cells)
-                     cell = path.cells[int((size + 1) / 2)]
-                     world.cast_unit_spell(unit=unit, path=path, cell=cell, spell=received_spell)
+                    unit = my_units[0]
+                    my_paths = myself.paths_from_player
+                    path = my_paths[random.randint(0, len(my_paths) - 1)]
+                    size = len(path.cells)
+                    cell = path.cells[int((size + 1) / 2)]
+                    world.cast_unit_spell(unit=unit, path=path, cell=cell, spell=received_spell)
 
         # this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range
         if len(myself.units) > 0:
@@ -77,4 +77,4 @@ class AI:
     # scores is a map from int to int which the key is player_id and value is player_score
     def end(self, world, scores):
         print("end started!")
-        print("My score:" ,scores[world.get_me().player_id])
+        print("My score:", scores[world.get_me().player_id])
