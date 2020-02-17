@@ -15,6 +15,7 @@ class Map:
         return self.cells[row][col]
 
     def clear_units(self):
+        self.units.clear()
         for row in self.cells:
             for cell in row:
                 cell.clear_units()
@@ -23,6 +24,7 @@ class Map:
         return None if not path_id in self.paths_dict else self.paths_dict[path_id]
 
     def add_unit_in_cell(self, row, col, unit):
+        self.units.append(unit)
         self.cells[row][col].add_unit(unit)
 
 
