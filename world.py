@@ -265,14 +265,14 @@ class World(ABC):
 
         self.start_time = self._get_current_time_millis()
 
-    def choose_deck_by_id(self, type_ids):
+    def choose_hand_by_id(self, type_ids):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
             message.info = {"units": type_ids}
             self.queue.put(message)
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-    def choose_deck(self, base_units):
+    def choose_hand(self, base_units):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if base_units is not None:
             message.info = {"units": [unit.type_id for unit in base_units]}
@@ -521,7 +521,7 @@ class World(ABC):
                                        "unitId": unit_id
                                    }))
 
-    def get_all_base_unit(self):
+    def get_all_base_units(self):
         return copy.deepcopy(self.base_units)
 
     def get_all_spells(self):

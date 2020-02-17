@@ -19,11 +19,11 @@ class AI:
         self.cols = map.col_num
 
         # choosing all flying units
-        all_base_units = world.base_units
-        my_deck = [base_unit for base_unit in all_base_units if base_unit.is_flying]
+        all_base_units = world.get_all_base_units()
+        my_hand = [base_unit for base_unit in all_base_units if base_unit.is_flying]
 
-        # picking the chosen deck - rest of the deck will automatically be filled with random base_units
-        world.choose_deck(base_units=my_deck)
+        # picking the chosen hand - rest of the hand will automatically be filled with random base_units
+        world.choose_hand(base_units=my_hand)
 
         # other pre process
         self.path_for_my_units = world.get_friend().paths_from_player[0]
