@@ -315,7 +315,7 @@ class ServerConstants:
 class GameConstants:
     def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
                  turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition,
-                 deck_size, hand_size#, ap_addition
+                 deck_size, hand_size  # , ap_addition
                  ):
         self.max_ap = max_ap
         self.max_turns = max_turns
@@ -327,7 +327,7 @@ class GameConstants:
         self.range_upgrade_addition = range_upgrade_addition
         self.deck_size = deck_size
         self.hand_size = hand_size
-        #self.ap_addition = ap_addition
+        # self.ap_addition = ap_addition
 
 
 class TurnUpdates:
@@ -348,7 +348,8 @@ class TurnUpdates:
             self.available_damage_upgrade = turn_updates.available_damage_upgrades
             self.available_range_upgrade = turn_updates.available_range_upgrades
 
+
 class Logs:
     @staticmethod
     def show_log(message):
-        print("Client Log message: " , message)
+        print("Client Log message: ", message)

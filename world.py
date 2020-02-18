@@ -104,7 +104,8 @@ class World:
                                              damage_upgrade_addition=game_constants_msg["damageUpgradeAddition"],
                                              range_upgrade_addition=game_constants_msg["rangeUpgradeAddition"],
                                              hand_size=game_constants_msg["handSize"],
-                                             deck_size=game_constants_msg["deckSize"]#,ap_addition=game_constants_msg["apAddition"]
+                                             deck_size=game_constants_msg["deckSize"]
+                                             # ,ap_addition=game_constants_msg["apAddition"]
                                              )
 
     def _find_path_starting_and_ending_with(self, first, last, paths):
@@ -134,7 +135,7 @@ class World:
                                 hand=[], ap=self._game_constants.max_ap,
                                 paths_from_player=self._get_paths_starting_with(kings[i].center, paths),
                                 path_to_friend=self._find_path_starting_and_ending_with(kings[i].center,
-                                                                                       kings[i ^ 1].center, paths),
+                                                                                        kings[i ^ 1].center, paths),
                                 units=[], cast_area_spell=None, cast_unit_spell=None,
                                 duplicate_units=[],
                                 hasted_units=[],
@@ -366,11 +367,11 @@ class World:
             if row is None or col is None:
                 Logs.show_log("get_paths_crossing cell function called with no valid argument")
                 return
-            cell = self._map.get_cell(row, col)
+            cell = self.map.get_cell(row, col)
 
         if not isinstance(cell, Cell):
             Logs.show_log("Given cell is invalid!")
-            return
+            return []
 
         paths = []
         for p in self._map.paths:
@@ -606,8 +607,8 @@ class World:
             self._queue.put(Message(type="rangeUpgrade",
                                     turn=self.get_current_turn(),
                                     info={
-                                       "unitId": unit_id
-                                   }))
+                                        "unitId": unit_id
+                                    }))
         else:
             Logs.show_log("invalid unit or unit_id in upgrade_unit_range")
 
@@ -619,8 +620,8 @@ class World:
             self._queue.put(Message(type="damageUpgrade",
                                     turn=self.get_current_turn(),
                                     info={
-                                       "unitId": unit_id
-                                   }))
+                                        "unitId": unit_id
+                                    }))
         else:
             Logs.show_log("invalid unit or unit_id in upgrade_unit_damage")
 
