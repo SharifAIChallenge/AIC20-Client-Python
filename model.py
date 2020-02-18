@@ -29,10 +29,11 @@ class Map:
 
 
 class Player:
+    _spells_dict = {}
+
     def __init__(self, player_id, deck, hand, ap, king, paths_from_player, path_to_friend,
                  units, cast_area_spell, cast_unit_spell, duplicate_units, hasted_units, played_units,
                  died_units, spells, range_upgraded_unit=None, damage_upgraded_unit=None):
-        self._spells_dict = {}
         self.player_id = player_id
         self.deck = deck
         self.hand = hand
@@ -61,17 +62,12 @@ class Player:
         self._spells_dict.clear()
         self.spells = spells
         for spell in spells:
-            if spell.type_id in self._spells_dict:
-                self._spells_dict[spell.type_id] += 1
-            else:
-                self._spells_dict[spell.type_id] = 1
+            self._spells_dict.update({spell.type_id: self._spells_dict.get(spell.type_id, 0) + 1})
 
     def get_spell_count(self, spell=None, spell_id=None):
         if spell is not None:
             spell_id = spell.type_id
-        if spell_id in self._spells_dict:
-            return self._spells_dict[spell_id]
-        return 0
+        return self._spells_dict.get(spell_id, 0)
 
     def get_spells(self):
         return self.spells

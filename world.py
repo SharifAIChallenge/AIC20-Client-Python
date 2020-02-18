@@ -366,7 +366,7 @@ class World:
         if cell is None:
             if row is None or col is None:
                 Logs.show_log("get_paths_crossing cell function called with no valid argument")
-                return
+                return []
             cell = self.map.get_cell(row, col)
 
         if not isinstance(cell, Cell):
