@@ -480,7 +480,14 @@ class World():
     # cast spell in the cell 'center'
     def cast_area_spell(self, center=None, row=None, col=None, spell=None, spell_id=None):
         if spell is None:
+            if spell_id is None or type(spell_id) is not int:
+                Logs.show_log("no valid spell selected in cast_area_spell!")
+                return
             spell = self.get_spell_by_id(spell_id)
+        if type(spell) is not Spell:
+            Logs.show_log("no valid spell selected in cast_area_spell!")
+            return
+
         if row is not None and col is not None:
             center = self.map.get_cell(row, col)
 
@@ -497,6 +504,8 @@ class World():
                                   "pathId": -1
                               })
             self.queue.put(message)
+        else:
+            Logs.show_log("invalid cell selected in cast_area_spell")
 
     # returns a list of units the spell casts effects on
     def get_area_spell_targets(self, center, row=None, col=None, spell=None, type_id=None):
@@ -505,6 +514,9 @@ class World():
                 spell = self.get_cast_spell_by_id(type_id)
             else:
                 return []
+        if type(spell) is not Spell:
+            Logs.show_log("invalid spell chosen in get_area_spell_targets")
+            return
         if not spell.is_area_spell():
             return []
         if center is None:
@@ -516,6 +528,7 @@ class World():
                 for u in cell.units:
                     if self._is_unit_targeted(u, spell.target):
                         ls.append(u)
+        return ls
 
     def _is_unit_targeted(self, unit, spell_target):
         if spell_target == 1:
@@ -566,23 +579,27 @@ class World():
         if unit is not None:
             unit_id = unit.unit_id
 
-        if unit_id is not None:
+        if unit_id is not None and type(unit_id) is int:
             self.queue.put(Message(type="rangeUpgrade",
                                    turn=self.get_current_turn(),
                                    info={
                                        "unitId": unit_id
                                    }))
+        else:
+            Logs.show_log("invalid unit or unit_id in upgrade_unit_range")
 
     def upgrade_unit_damage(self, unit=None, unit_id=None):
         if unit is not None:
             unit_id = unit.unit_id
 
-        if unit_id is not None:
+        if unit_id is not None and type(unit_id) is int:
             self.queue.put(Message(type="damageUpgrade",
                                    turn=self.get_current_turn(),
                                    info={
                                        "unitId": unit_id
                                    }))
+        else:
+            Logs.show_log("invalid unit or unit_id in upgrade_unit_damage")
 
     def get_all_base_units(self):
         return copy.deepcopy(self.base_units)
@@ -594,7 +611,6 @@ class World():
         for p in self.players:
             if p.player_id == player_id:
                 return p.king
-
         return None
 
     def get_base_unit_by_id(self, type_id):
