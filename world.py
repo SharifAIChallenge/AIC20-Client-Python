@@ -104,7 +104,8 @@ class World:
                                              damage_upgrade_addition=game_constants_msg["damageUpgradeAddition"],
                                              range_upgrade_addition=game_constants_msg["rangeUpgradeAddition"],
                                              hand_size=game_constants_msg["handSize"],
-                                             deck_size=game_constants_msg["deckSize"])
+                                             deck_size=game_constants_msg["deckSize"],
+                                             ap_addition=game_constants_msg["apAddition"])
 
     def _find_path_starting_and_ending_with(self, first, last, paths):
         for path in paths:

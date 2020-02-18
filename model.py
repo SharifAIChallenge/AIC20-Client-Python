@@ -313,7 +313,7 @@ class ServerConstants:
 class GameConstants:
     def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
                  turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition,
-                 deck_size, hand_size):
+                 deck_size, hand_size, ap_addition):
         self.max_ap = max_ap
         self.max_turns = max_turns
         self.turn_timeout = turn_timeout
@@ -324,6 +324,7 @@ class GameConstants:
         self.range_upgrade_addition = range_upgrade_addition
         self.deck_size = deck_size
         self.hand_size = hand_size
+        self.ap_addition = ap_addition
 
 
 class TurnUpdates:
