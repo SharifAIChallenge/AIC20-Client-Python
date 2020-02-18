@@ -318,7 +318,6 @@ class World:
         else:
             Logs.show_log("choose_hand_by_id function called with None type_eds")
 
-
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_hand(self, base_units):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
@@ -396,13 +395,19 @@ class World:
     def get_shortest_path_to_cell(self, from_player_id=None, from_player=None, cell=None, row=None, col=None):
         if from_player is not None:
             from_player_id = from_player.player_id
+        elif from_player_id is None:
+            return None
+
+        if self.get_player_by_id(from_player_id) is None:
+            return None
+
         if cell is None:
             if row is None or col is None:
-                return
+                return None
             cell = self.map.get_cell(row, col)
         shortest_path_from_player = World._shortest_path.get(from_player_id, None)
         if shortest_path_from_player is None:
-            return
+            return None
         return shortest_path_from_player[cell.row][cell.col]
 
     # place unit with type_id in path_id
