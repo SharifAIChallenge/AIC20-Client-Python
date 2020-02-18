@@ -13,7 +13,7 @@ To fetch and build the project use the following commands:
 
 ```
 cd <path to working directory>
-git clone --depth=1 https://github.com/SharifAIChallenge/AIC20-Client-Cpp
+git clone https://github.com/SharifAIChallenge/AIC20-Client-Cpp
 cd AIC20-Client-Python
 ```
 
