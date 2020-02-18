@@ -56,6 +56,7 @@ class Player:
         return self.king.hp
 
     def set_spells(self, spells):
+        self._spells_dict.clear()
         self.spells = spells
         for spell in spells:
             if spell.type_id in self._spells_dict:

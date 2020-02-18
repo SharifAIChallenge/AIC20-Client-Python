@@ -252,7 +252,7 @@ class World:
             if unit.target == -1 or unit.target_if_king is not None:
                 unit.target = None
             else:
-                unit.target = self.map.get_unit_by_id(unit.target)
+                unit.target = self.get_unit_by_id(unit.target)
 
     def _handle_turn_cast_spells(self, msg):
         self.cast_spells = []
