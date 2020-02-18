@@ -15,6 +15,7 @@ class Map:
         return self.cells[row][col]
 
     def clear_units(self):
+        self.units.clear()
         for row in self.cells:
             for cell in row:
                 cell.clear_units()
@@ -23,6 +24,7 @@ class Map:
         return None if not path_id in self.paths_dict else self.paths_dict[path_id]
 
     def add_unit_in_cell(self, row, col, unit):
+        self.units.append(unit)
         self.cells[row][col].add_unit(unit)
 
 
@@ -313,7 +315,8 @@ class ServerConstants:
 class GameConstants:
     def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
                  turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition,
-                 deck_size, hand_size, ap_addition):
+                 deck_size, hand_size#, ap_addition
+                 ):
         self.max_ap = max_ap
         self.max_turns = max_turns
         self.turn_timeout = turn_timeout
@@ -324,7 +327,7 @@ class GameConstants:
         self.range_upgrade_addition = range_upgrade_addition
         self.deck_size = deck_size
         self.hand_size = hand_size
-        self.ap_addition = ap_addition
+        #self.ap_addition = ap_addition
 
 
 class TurnUpdates:
