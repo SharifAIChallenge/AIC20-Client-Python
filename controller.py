@@ -52,7 +52,7 @@ class Controller:
             print("Error in client:")
             traceback.print_exc()
             # print(e)
-        world.queue.put(Message(type=ServerConstants.MESSAGE_TYPE_END_TURN, turn=world.current_turn, info={}))
+        world._queue.put(Message(type=ServerConstants.MESSAGE_TYPE_END_TURN, turn=world.get_current_turn(), info={}))
 
     def start(self):
         self.read_settings()
