@@ -436,6 +436,10 @@ class World:
             path_id = path.id
         if path_id is None or type_id is None:
             return None
+        if type_id is None:
+            Logs.show_log("type_id is None in cast_area spell function call!")
+            return
+
         message = Message(turn=self.get_current_turn(),
                           type="putUnit",
                           info={
