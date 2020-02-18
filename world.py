@@ -1,12 +1,11 @@
 import copy
 import time
-from abc import ABC
 
 from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget
+    CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget, Logs
 
 
-class World(ABC):
+class World():
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
 
@@ -268,15 +267,29 @@ class World(ABC):
     def choose_hand_by_id(self, type_ids):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
+            for type_id in type_ids:
+                if type(type_id) is not int:
+                    Logs.show_log("type_ids are not int")
+                    return
+
             message.info = {"units": type_ids}
             self.queue.put(message)
+        else:
+            Logs.show_log("choose_hand_by_id function called with None type_eds")
+
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_hand(self, base_units):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if base_units is not None:
+            for base_unit in base_units:
+                if type(base_unit) is not BaseUnit:
+                    Logs.show_log("base_units is not an array of BaseUnits")
+                    return
             message.info = {"units": [unit.type_id for unit in base_units]}
             self.queue.put(message)
+        else:
+            Logs.show_log("choose_hand function called with None base_units")
 
     def get_me(self):
         return self.player
@@ -294,6 +307,7 @@ class World(ABC):
         elif self.player_second_enemy.player_id == player_id:
             return self.player_first_enemy
         else:
+            Logs.show_log("get_friend_by_id function no player with given player_id")
             return None
 
     def get_first_enemy(self):
@@ -309,8 +323,13 @@ class World(ABC):
     def get_paths_crossing_cell(self, cell=None, row=None, col=None):
         if cell is None:
             if row is None or col is None:
+                Logs.show_log("get_paths_crossing cell function called with no valid argument")
                 return
             cell = self.map.get_cell(row, col)
+
+        if not isinstance(cell, Cell):
+            Logs.show_log("Given cell is invalid!")
+            return
 
         paths = []
         for p in self.map.paths:
@@ -322,8 +341,12 @@ class World(ABC):
     def get_cell_units(self, cell=None, row=None, col=None):
         if cell is None:
             if row is None and col is None:
+                Logs.show_log("get_paths_crossing cell function called with no valid argument")
                 return None
             cell = self.map.get_cell(row, col)
+        if not isinstance(cell, Cell):
+            Logs.show_log("Given cell is invalid!")
+            return
         return cell.units
 
     # return the shortest path from player_id fortress to cell
@@ -367,6 +390,22 @@ class World(ABC):
 
     # place unit with type_id in path_id
     def put_unit(self, type_id=None, path_id=None, base_unit=None, path=None):
+        fail = False
+        if type_id is not None and type(type_id) is not int:
+            Logs.show_log("put_unit function called with invalid type_id argument!")
+            fail = True
+        if path_id is not None and type(path_id) is not int:
+            Logs.show_log("put_unit function called with invalid path_id argument!")
+            fail = True
+        if base_unit is not None and type(base_unit) is not BaseUnit:
+            Logs.show_log("put_unit function called with invalid base_unit argument")
+            fail = True
+        if path is not None and type(path) is not Path:
+            Logs.show_log("put_unit function called with invalid path argument")
+            fail = True
+        if fail is True:
+            return
+
         if base_unit is not None:
             type_id = base_unit.type_id
         if path is not None:
@@ -393,15 +432,39 @@ class World(ABC):
                         spell=None,
                         spell_id=None):
         if spell is None and spell_id is None:
+            Logs.show_log("cast_unit_spell function called with no spell input!")
             return None
         if spell is None:
+            if type(spell_id) is not int:
+                Logs.show_log("spell_id is not an integer in cast_unit_spell function call!")
+                return
             spell = self.get_spell_by_id(spell_id)
+
         if row is not None and col is not None:
+            if type(row) is not int or type(col) is not int:
+                Logs.show_log("row and column arguments are invalid in cast_unit_spell function call")
+                return
             cell = Cell(row, col)
+
         if unit is not None:
+            if type(unit) is not Unit:
+                Logs.show_log("unit argument is invalid in cast_unit_spell function call")
+                return
             unit_id = unit.unit_id
         if path is not None:
+            if type(path) is not Path:
+                Logs.show_log("path argument is invalid in cast_unit_spell function call")
+                return
             path_id = path.id
+
+        if type(unit_id) is not int:
+            Logs.show_log("unit_id argument is invalid in cast_unit_spell function call")
+            return
+
+        if type(path_id) is not int:
+            Logs.show_log("path_id argument is invalid in cast_unit_spell function call")
+            return
+
         message = Message(type="castSpell", turn=self.get_current_turn(),
                           info={
                               "typeId": spell.type_id,
