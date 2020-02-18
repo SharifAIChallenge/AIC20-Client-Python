@@ -21,7 +21,7 @@ Now you have to run the server ".jar" file and then you should `controller.py` 4
 
 ### Using Pycharm
 
-You can download Jetbrains Pycharm from this link.
+You can download Jetbrains Pycharm from this [link](https://www.jetbrains.com/pycharm/download/).
 
 This IDE allows quick and easier usage.
 
