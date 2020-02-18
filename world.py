@@ -297,7 +297,7 @@ class World():
     def get_friend(self):
         return self.player_friend
 
-    def get_friend_by_id(self, player_id):
+    def _get_friend_by_id(self, player_id):
         if self.player.player_id == player_id:
             return self.player_friend
         elif self.player_friend.player_id == player_id:
@@ -381,7 +381,7 @@ class World():
             ls = [self.get_player_by_id(from_player_id).path_to_friend]
             ptf = path_count(ls)
             if ptf is None:
-                pff = path_count(self.get_friend_by_id(from_player_id).paths_from_player)
+                pff = path_count(self._get_friend_by_id(from_player_id).paths_from_player)
                 if pff is None:
                     return None
                 return pff
