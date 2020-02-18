@@ -5,9 +5,10 @@ from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUp
     CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget, Logs
 
 
-class World():
+class World:
     DEBUGGING_MODE = False
     LOG_FILE_POINTER = None
+    _shortest_path = dict()
 
     def __init__(self, world=None, queue=None):
         self.game_constants = None
@@ -46,6 +47,46 @@ class World():
             self.queue = world.queue
         else:
             self.queue = queue
+
+        if len(World._shortest_path) == 0:
+            self._pre_process_shortest_path()
+
+    def _pre_process_shortest_path(self):
+        def path_count(paths_from_player, paths_from_friend, path_to_friend):
+            shortest_path = [[None for i in range(self.map.col_num)] for j in range(self.map.row_num)]
+            shortest_dist = [[0 for i in range(self.map.col_num)] for j in range(self.map.row_num)]
+            for p in paths_from_player:
+                num = 0
+                for c in p.cells:
+                    row = c.row
+                    col = c.col
+                    if shortest_path[row][col] is None:
+                        shortest_path[row][col] = p
+                        shortest_dist[row][col] = num
+                    elif shortest_dist[row][col] > num:
+                        shortest_dist[row][col] = num
+                        shortest_path[row][col] = p
+                    num += 1
+
+            l = len(path_to_friend.cells)
+            for p in paths_from_friend:
+                num = l - 1
+                for c in p.cells:
+                    row = c.row
+                    col = c.col
+                    if shortest_path[row][col] is None:
+                        shortest_path[row][col] = p
+                        shortest_dist[row][col] = num
+                    elif shortest_dist[row][col] > num:
+                        shortest_dist[row][col] = num
+                        shortest_path[row][col] = p
+                    num += 1
+            return shortest_path
+
+        for player in self.players:
+            World._shortest_path.update({player.player_id: path_count(player.paths_from_player
+                                                                      , self._get_friend_by_id(
+                    player.player_id).paths_from_player, player.path_to_friend)})
 
     def _get_current_time_millis(self):
         return int(round(time.time() * 1000))
@@ -353,40 +394,16 @@ class World():
     # this path is in the available path list
     # path may cross from friend
     def get_shortest_path_to_cell(self, from_player_id=None, from_player=None, cell=None, row=None, col=None):
-        def path_count(paths):
-            shortest_path = None
-            count = 0
-            for p in paths:
-                count_num = 0
-                for c in p.cells:
-                    if c == cell:
-                        if shortest_path is None:
-                            count = count_num
-                            shortest_path = p
-
-                        elif count_num < count:
-                            count = count_num
-                            shortest_path = p
-                    count_num += 1
-            return shortest_path
-
         if from_player is not None:
             from_player_id = from_player.player_id
         if cell is None:
             if row is None or col is None:
                 return
             cell = self.map.get_cell(row, col)
-        p = path_count(self.get_player_by_id(from_player_id).paths_from_player)
-        if p is None:
-            ls = [self.get_player_by_id(from_player_id).path_to_friend]
-            ptf = path_count(ls)
-            if ptf is None:
-                pff = path_count(self._get_friend_by_id(from_player_id).paths_from_player)
-                if pff is None:
-                    return None
-                return pff
-            return ptf
-        return p
+        shortest_path_from_player = World._shortest_path.get(from_player_id, None)
+        if shortest_path_from_player is None:
+            return
+        return shortest_path_from_player[cell.row][cell.col]
 
     # place unit with type_id in path_id
     def put_unit(self, type_id=None, path_id=None, base_unit=None, path=None):
@@ -611,6 +628,7 @@ class World():
         for p in self.players:
             if p.player_id == player_id:
                 return p.king
+
         return None
 
     def get_base_unit_by_id(self, type_id):
