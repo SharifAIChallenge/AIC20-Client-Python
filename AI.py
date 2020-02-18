@@ -24,7 +24,6 @@ class AI:
 
         # picking the chosen hand - rest of the hand will automatically be filled with random base_units
         world.choose_hand(base_units=my_hand)
-
         # other pre process
         self.path_for_my_units = world.get_friend().paths_from_player[0]
 
