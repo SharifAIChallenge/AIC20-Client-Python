@@ -538,7 +538,7 @@ class World:
                 return []
         if type(spell) is not Spell:
             Logs.show_log("invalid spell chosen in get_area_spell_targets")
-            return
+            return []
         if not spell.is_area_spell():
             return []
         if center is None:
@@ -553,13 +553,13 @@ class World:
         return ls
 
     def _is_unit_targeted(self, unit, spell_target):
-        if spell_target == 1:
+        if spell_target == SpellTarget.SELF:
             if unit in self.player.units:
                 return True
-        elif spell_target == 2:
+        elif spell_target == SpellTarget.ALLIED:
             if unit in self.player_friend or unit in self.player.units:
                 return True
-        elif spell_target == 3:
+        elif spell_target == SpellTarget.ENEMY:
             if unit in self.player_first_enemy or unit in self.player_second_enemy:
                 return True
         return False
