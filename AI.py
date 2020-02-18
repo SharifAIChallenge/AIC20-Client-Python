@@ -13,6 +13,8 @@ class AI:
     def pick(self, world):
         print("pick started!")
 
+        world.get_cast_spell_by_id(id=1.1)
+
         # pre process
         map = world.get_map()
         self.rows = map.row_num
@@ -32,7 +34,7 @@ class AI:
         print("turn started:", world.get_current_turn())
 
         myself = world.get_me()
-        max_ap = world.game_constants.max_ap
+        max_ap = world.get_game_constants().max_ap
 
         # play all of hand once your ap reaches maximum. if ap runs out, putUnit doesn't do anything
         if myself.ap == max_ap:
