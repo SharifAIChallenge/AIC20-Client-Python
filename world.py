@@ -92,7 +92,7 @@ class World:
         return int(round(time.time() * 1000))
 
     def _get_time_past(self):
-        return self._get_current_time_millis() - self.start_time
+        return self._get_current_time_millis() - self._start_time
 
     def _game_constant_init(self, game_constants_msg):
         self._game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
@@ -187,6 +187,8 @@ class World:
         self._map_init(msg["map"])
         self._base_unit_init(msg["baseUnits"])
         self._spells_init(msg["spells"])
+        self._start_time = self._get_current_time_millis()
+        self._current_turn = 0
 
     def _handle_turn_kings(self, msg):
         for king_msg in msg:
@@ -305,7 +307,7 @@ class World:
         self._player_friend.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["friendSpells"]])
         self._player.ap = msg["remainingAP"]
 
-        self.start_time = self._get_current_time_millis()
+        self._start_time = self._get_current_time_millis()
 
     def choose_hand_by_id(self, type_ids):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
@@ -384,11 +386,11 @@ class World:
         if cell is None:
             if row is None and col is None:
                 Logs.show_log("get_paths_crossing cell function called with no valid argument")
-                return None
+                return []
             cell = self._map.get_cell(row, col)
         if not isinstance(cell, Cell):
             Logs.show_log("Given cell is invalid!")
-            return
+            return []
         return cell.units
 
     # return the shortest path from player_id fortress to cell
@@ -453,7 +455,10 @@ class World:
         return self._current_turn
 
     def get_remaining_time(self):
-        return self._game_constants.turn_timeout - self._get_time_past()
+        if self.get_current_turn() > 0:
+            return self._game_constants.turn_timeout - self._get_time_past()
+        else:
+            return self._game_constants.pick_timeout - self._get_time_past()
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
