@@ -11,7 +11,9 @@ class World:
     LOG_FILE_POINTER = None
     _shortest_path = dict()
 
+
     def __init__(self, world=None, queue=None):
+        self._start_time = 0
         self._game_constants = None
 
         self._turn_updates = None
@@ -52,6 +54,7 @@ class World:
         if len(World._shortest_path) == 0:
             self._pre_process_shortest_path()
 
+
     def _pre_process_shortest_path(self):
         def path_count(paths_from_player, paths_from_friend, path_to_friend):
             shortest_path = [[None for i in range(self._map.col_num)] for j in range(self._map.row_num)]
@@ -89,11 +92,14 @@ class World:
                                                                       , self._get_friend_by_id(
                     player.player_id).paths_from_player, player.path_to_friend)})
 
+
     def _get_current_time_millis(self):
         return int(round(time.time() * 1000))
 
+
     def _get_time_past(self):
         return self._get_current_time_millis() - self._start_time
+
 
     def _game_constant_init(self, game_constants_msg):
         self._game_constants = GameConstants(max_ap=game_constants_msg["maxAP"],
@@ -105,9 +111,10 @@ class World:
                                              damage_upgrade_addition=game_constants_msg["damageUpgradeAddition"],
                                              range_upgrade_addition=game_constants_msg["rangeUpgradeAddition"],
                                              hand_size=game_constants_msg["handSize"],
-                                             deck_size=game_constants_msg["deckSize"]
-                                             # ,ap_addition=game_constants_msg["apAddition"]
+                                             deck_size=game_constants_msg["deckSize"],
+                                             ap_addition=game_constants_msg["apAddition"]
                                              )
+
 
     def _find_path_starting_and_ending_with(self, first, last, paths):
         for path in paths:
@@ -118,6 +125,7 @@ class World:
             if c_path.cells[0] == first and c_path.cells[-1] == last:
                 return c_path
         return None
+
 
     def _map_init(self, map_msg):
         row_num = map_msg["rows"]
@@ -156,6 +164,7 @@ class World:
 
         self._map = Map(row_num=row_num, col_num=col_num, paths=paths, kings=kings, cells=input_cells, units=[])
 
+
     def _base_unit_init(self, msg):
         self._base_units = [BaseUnit(type_id=b_unit["typeId"], max_hp=b_unit["maxHP"],
                                      base_attack=b_unit["baseAttack"],
@@ -166,11 +175,13 @@ class World:
                                      ap=b_unit["ap"])
                             for b_unit in msg]
 
+
     def _get_base_unit_by_id(self, type_id):
         for base_unit in self._base_units:
             if base_unit.type_id == type_id:
                 return base_unit
         return None
+
 
     def _spells_init(self, msg):
         self._spells = [Spell(type=SpellType.get_value(spell["type"]),
@@ -183,13 +194,15 @@ class World:
                               is_damaging=False)
                         for spell in msg]
 
+
     def _handle_init_message(self, msg):
+        self._start_time = self._get_current_time_millis()
         self._game_constant_init(msg['gameConstants'])
         self._map_init(msg["map"])
         self._base_unit_init(msg["baseUnits"])
         self._spells_init(msg["spells"])
-        self._start_time = self._get_current_time_millis()
         self._current_turn = 0
+
 
     def _handle_turn_kings(self, msg):
         for king_msg in msg:
@@ -197,6 +210,7 @@ class World:
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
             self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"] if king_msg[
                                                                                                 "target"] != -1 else None
+
 
     def _handle_turn_units(self, msg, is_dead_unit=False):
         if not is_dead_unit:
@@ -259,6 +273,7 @@ class World:
             else:
                 unit.target = self.get_unit_by_id(unit.target)
 
+
     def _handle_turn_cast_spells(self, msg):
         self._cast_spells = []
         for cast_spell_msg in msg:
@@ -288,7 +303,9 @@ class World:
                 return cast_spell
         return None
 
+
     def _handle_turn_message(self, msg):
+        self._start_time = self._get_current_time_millis()
         self._current_turn = msg['currTurn']
         self._player.deck = [self._get_base_unit_by_id(deck_type_id) for deck_type_id in msg["deck"]]
         self._player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
@@ -308,7 +325,6 @@ class World:
         self._player_friend.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["friendSpells"]])
         self._player.ap = msg["remainingAP"]
 
-        self._start_time = self._get_current_time_millis()
 
     def choose_hand_by_id(self, type_ids: List[int]):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
@@ -322,6 +338,7 @@ class World:
             self._queue.put(message)
         else:
             Logs.show_log("choose_hand_by_id function called with None type_eds")
+
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
     def choose_hand(self, base_units: List[BaseUnit]):
@@ -341,6 +358,7 @@ class World:
 
     def get_friend(self) -> Player:
         return self._player_friend
+
 
     def _get_friend_by_id(self, player_id):
         if self._player.player_id == player_id:
@@ -364,6 +382,7 @@ class World:
     def get_map(self) -> Map:
         return self._map
 
+
     # return a list of paths crossing one cell
     def get_paths_crossing_cell(self, cell:Cell=None, row:int=None, col:int=None) -> List[Path]:
         if cell is None:
@@ -382,6 +401,7 @@ class World:
                 paths.append(p)
         return paths
 
+
     # return a list of units in a cell
     def get_cell_units(self, cell:Cell=None, row:int=None, col:int=None) -> List[Unit]:
         if cell is None:
@@ -393,6 +413,7 @@ class World:
             Logs.show_log("Given cell is invalid!")
             return []
         return cell.units
+
 
     # return the shortest path from player_id fortress to cell
     # this path is in the available path list
@@ -414,6 +435,7 @@ class World:
         if shortest_path_from_player is None:
             return None
         return shortest_path_from_player[cell.row][cell.col]
+
 
     # place unit with type_id in path_id
     def put_unit(self, type_id:int=None, path_id:int=None, base_unit:BaseUnit=None, path:Path=None):
@@ -451,6 +473,7 @@ class World:
                           })
         self._queue.put(message)
 
+
     # return the number of turns passed
     def get_current_turn(self) -> int:
         return self._current_turn
@@ -460,6 +483,7 @@ class World:
             return self._game_constants.turn_timeout - self._get_time_past()
         else:
             return self._game_constants.pick_timeout - self._get_time_past()
+
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
     def cast_unit_spell(self, unit:Unit=None, unit_id:int=None, path:Path=None, path_id:int=None, cell:Cell=None, row:int=None, col:int=None,
@@ -511,6 +535,7 @@ class World:
                           })
         self._queue.put(message)
 
+
     # cast spell in the cell 'center'
     def cast_area_spell(self, center:Cell=None, row:int=None, col:int=None, spell:Spell=None, spell_id:int=None):
         if spell is None:
@@ -541,6 +566,7 @@ class World:
         else:
             Logs.show_log("invalid cell selected in cast_area_spell")
 
+
     # returns a list of units the spell casts effects on
     def get_area_spell_targets(self, center:Cell, row:int=None, col:int=None, spell:Spell=None, type_id:int=None):
         if spell is None:
@@ -564,6 +590,7 @@ class World:
                         ls.append(u)
         return ls
 
+
     def _is_unit_targeted(self, unit, spell_target):
         if spell_target == SpellTarget.SELF:
             if unit in self._player.units:
@@ -576,12 +603,14 @@ class World:
                 return True
         return False
 
+
     # every once in a while you can upgrade, this returns the remaining time for upgrade
     def get_remaining_turns_to_upgrade(self) -> int:
         rem_turn = (self._game_constants.turns_to_upgrade - self._current_turn) % self._game_constants.turns_to_upgrade
         if rem_turn == 0:
             return self._game_constants.turns_to_upgrade
         return rem_turn
+
 
     # every once in a while a spell is given this remains the remaining time to get new spell
     def get_remaining_turns_to_get_spell(self) -> int:
@@ -590,6 +619,7 @@ class World:
             return self._game_constants.turns_to_spell
         return rem_turn
 
+
     # returns a list of spells casted on a cell
     def get_range_upgrade_number(self) -> int:
         return self._turn_updates.available_range_upgrade
@@ -597,11 +627,13 @@ class World:
     def get_damage_upgrade_number(self) -> int:
         return self._turn_updates.available_damage_upgrade
 
+
     # returns the spell given in that turn
     def get_received_spell(self) -> Spell:
         spell_id = self._turn_updates.received_spell
         spell = self.get_spell_by_id(spell_id)
         return spell
+
 
     # returns the spell given in that turn to friend
     def get_friend_received_spell(self) -> Spell:
@@ -653,6 +685,7 @@ class World:
                 return bu
         return None
 
+
     # returns unit in map with a unit_id
     def get_unit_by_id(self, unit_id:int) -> Unit or None:
         for unit in self._map.units:
@@ -675,6 +708,7 @@ class World:
     def get_game_constants(self) -> GameConstants:
         return self._game_constants
 
+
     def _get_paths_starting_with(self, first, paths):
         ret = []
         for path in paths:
@@ -684,6 +718,7 @@ class World:
             if c_path.cells[0] == first:
                 ret.append(c_path)
         return ret
+
 
     def _handle_end_message(self, scores_list_msg):
         return dict([(score["playerId"], score["score"]) for score in scores_list_msg])
