@@ -2,10 +2,8 @@ from enum import Enum
 
 from typing import *
 
-from model import *
-
 class Map:
-    def __init__(self, row_num:int, col_num:int, paths:List[Path], units:List[Unit], kings:List[King], cells:List[List[Cell]]):
+    def __init__(self, row_num, col_num, paths, units, kings, cells):
         self.row_num = row_num
         self.col_num = col_num
         self.paths = paths
@@ -26,7 +24,7 @@ class Map:
     def get_path_by_id(self, path_id:int):
         return None if not path_id in self.paths_dict else self.paths_dict[path_id]
 
-    def add_unit_in_cell(self, row:int, col:int, unit:Unit):
+    def add_unit_in_cell(self, row:int, col:int, unit):
         self.units.append(unit)
         self.cells[row][col].add_unit(unit)
 
@@ -34,9 +32,9 @@ class Map:
 class Player:
     _spells_dict = {}
 
-    def __init__(self, player_id:int, deck:List[BaseUnit], hand:List[BaseUnit], ap:int, king:King, paths_from_player:List[Path], path_to_friend:Path,
-                 units:List[Unit], cast_area_spell:CastAreaSpell, cast_unit_spell:CastUnitSpell, duplicate_units:List[Unit], hasted_units:List[Unit], played_units:List[Unit],
-                 died_units:List[Unit], spells:List[Spell], range_upgraded_unit:Unit=None, damage_upgraded_unit:Unit=None):
+    def __init__(self, player_id:int, deck, hand, ap:int, king, paths_from_player, path_to_friend,
+                 units, cast_area_spell, cast_unit_spell, duplicate_units, hasted_units, played_units,
+                 died_units, spells, range_upgraded_unit=None, damage_upgraded_unit=None):
         self.player_id = player_id
         self.deck = deck
         self.hand = hand
