@@ -283,7 +283,7 @@ class CastAreaSpell(CastSpell):
                  remaining_turns):
         super().__init__(spell=spell, id=id, caster_id=caster_id,
                          cell=cell, affected_units=affected_units)
-        self.ramaining_turns = remaining_turns
+        self.remaining_turns = remaining_turns
 
 
 class ServerConstants:

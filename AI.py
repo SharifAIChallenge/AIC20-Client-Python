@@ -13,8 +13,6 @@ class AI:
     def pick(self, world):
         print("pick started!")
 
-        world.get_cast_spell_by_id(id=1.1)
-
         # pre process
         map = world.get_map()
         self.rows = map.row_num
