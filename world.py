@@ -207,6 +207,7 @@ class World:
     def _handle_turn_kings(self, msg):
         for king_msg in msg:
             hp = king_msg["hp"] if (king_msg["hp"] > 0 and king_msg["isAlive"]) else -1
+            self.get_player_by_id(king_msg["playerId"]).king.is_alive = True if hp > 0 else False
             self.get_player_by_id(king_msg["playerId"]).king.hp = hp
             self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"] if king_msg[
                                                                                                 "target"] != -1 else None
