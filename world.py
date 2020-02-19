@@ -4,6 +4,7 @@ import time
 from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
     CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget, Logs
 
+from typing import *
 
 class World:
     DEBUGGING_MODE = False
@@ -281,7 +282,7 @@ class World:
                                   path=self._map.get_path_by_id(cast_spell_msg["pathId"]),
                                   affected_units=affected_units))
 
-    def get_cast_spell_by_id(self, id):
+    def get_cast_spell_by_id(self, id: int):
         for cast_spell in self._cast_spells:
             if cast_spell.id == id:
                 return cast_spell
@@ -309,7 +310,7 @@ class World:
 
         self._start_time = self._get_current_time_millis()
 
-    def choose_hand_by_id(self, type_ids):
+    def choose_hand_by_id(self, type_ids: List[int]):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
             for type_id in type_ids:
@@ -323,7 +324,7 @@ class World:
             Logs.show_log("choose_hand_by_id function called with None type_eds")
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-    def choose_hand(self, base_units):
+    def choose_hand(self, base_units: List[BaseUnit]):
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if base_units is not None:
             for base_unit in base_units:
@@ -335,10 +336,10 @@ class World:
         else:
             Logs.show_log("choose_hand function called with None base_units")
 
-    def get_me(self):
+    def get_me(self) -> Player:
         return self._player
 
-    def get_friend(self):
+    def get_friend(self) -> Player:
         return self._player_friend
 
     def _get_friend_by_id(self, player_id):
@@ -354,22 +355,22 @@ class World:
             Logs.show_log("get_friend_by_id function no player with given player_id")
             return None
 
-    def get_first_enemy(self):
+    def get_first_enemy(self) -> Player:
         return self._player_first_enemy
 
-    def get_second_enemy(self):
+    def get_second_enemy(self) -> Player:
         return self._player_second_enemy
 
-    def get_map(self):
+    def get_map(self) -> Map:
         return self._map
 
     # return a list of paths crossing one cell
-    def get_paths_crossing_cell(self, cell=None, row=None, col=None):
+    def get_paths_crossing_cell(self, cell:Cell=None, row:int=None, col:int=None) -> List[Path]:
         if cell is None:
             if row is None or col is None:
                 Logs.show_log("get_paths_crossing cell function called with no valid argument")
                 return []
-            cell = self.map.get_cell(row, col)
+            cell = self._map.get_cell(row, col)
 
         if not isinstance(cell, Cell):
             Logs.show_log("Given cell is invalid!")
@@ -382,7 +383,7 @@ class World:
         return paths
 
     # return a list of units in a cell
-    def get_cell_units(self, cell=None, row=None, col=None):
+    def get_cell_units(self, cell:Cell=None, row:int=None, col:int=None) -> List[Unit]:
         if cell is None:
             if row is None and col is None:
                 Logs.show_log("get_paths_crossing cell function called with no valid argument")
@@ -396,7 +397,7 @@ class World:
     # return the shortest path from player_id fortress to cell
     # this path is in the available path list
     # path may cross from friend
-    def get_shortest_path_to_cell(self, from_player_id=None, from_player=None, cell=None, row=None, col=None):
+    def get_shortest_path_to_cell(self, from_player_id:int=None, from_player:Player=None, cell:Cell=None, row:int=None, col:int=None):
         if from_player is not None:
             from_player_id = from_player.player_id
         elif from_player_id is None:
@@ -415,7 +416,7 @@ class World:
         return shortest_path_from_player[cell.row][cell.col]
 
     # place unit with type_id in path_id
-    def put_unit(self, type_id=None, path_id=None, base_unit=None, path=None):
+    def put_unit(self, type_id:int=None, path_id:int=None, base_unit:BaseUnit=None, path:Path=None):
         fail = False
         if type_id is not None and type(type_id) is not int:
             Logs.show_log("put_unit function called with invalid type_id argument!")
@@ -451,19 +452,19 @@ class World:
         self._queue.put(message)
 
     # return the number of turns passed
-    def get_current_turn(self):
+    def get_current_turn(self) -> int:
         return self._current_turn
 
-    def get_remaining_time(self):
+    def get_remaining_time(self) -> int:
         if self.get_current_turn() > 0:
             return self._game_constants.turn_timeout - self._get_time_past()
         else:
             return self._game_constants.pick_timeout - self._get_time_past()
 
     # put unit_id in path_id in position 'index' all spells of one kind have the same id
-    def cast_unit_spell(self, unit=None, unit_id=None, path=None, path_id=None, cell=None, row=None, col=None,
-                        spell=None,
-                        spell_id=None):
+    def cast_unit_spell(self, unit:Unit=None, unit_id:int=None, path:Path=None, path_id:int=None, cell:Cell=None, row:int=None, col:int=None,
+                        spell:Spell=None,
+                        spell_id:int=None):
         if spell is None and spell_id is None:
             Logs.show_log("cast_unit_spell function called with no spell input!")
             return None
@@ -511,7 +512,7 @@ class World:
         self._queue.put(message)
 
     # cast spell in the cell 'center'
-    def cast_area_spell(self, center=None, row=None, col=None, spell=None, spell_id=None):
+    def cast_area_spell(self, center:Cell=None, row:int=None, col:int=None, spell:Spell=None, spell_id:int=None):
         if spell is None:
             if spell_id is None or type(spell_id) is not int:
                 Logs.show_log("no valid spell selected in cast_area_spell!")
@@ -541,7 +542,7 @@ class World:
             Logs.show_log("invalid cell selected in cast_area_spell")
 
     # returns a list of units the spell casts effects on
-    def get_area_spell_targets(self, center, row=None, col=None, spell=None, type_id=None):
+    def get_area_spell_targets(self, center:Cell, row:int=None, col:int=None, spell:Spell=None, type_id:int=None):
         if spell is None:
             if type_id is not None:
                 spell = self.get_cast_spell_by_id(type_id)
@@ -576,39 +577,39 @@ class World:
         return False
 
     # every once in a while you can upgrade, this returns the remaining time for upgrade
-    def get_remaining_turns_to_upgrade(self):
+    def get_remaining_turns_to_upgrade(self) -> int:
         rem_turn = (self._game_constants.turns_to_upgrade - self._current_turn) % self._game_constants.turns_to_upgrade
         if rem_turn == 0:
             return self._game_constants.turns_to_upgrade
         return rem_turn
 
     # every once in a while a spell is given this remains the remaining time to get new spell
-    def get_remaining_turns_to_get_spell(self):
+    def get_remaining_turns_to_get_spell(self) -> int:
         rem_turn = (self._game_constants.turns_to_spell - self._current_turn) % self._game_constants.turns_to_spell
         if rem_turn == 0:
             return self._game_constants.turns_to_spell
         return rem_turn
 
     # returns a list of spells casted on a cell
-    def get_range_upgrade_number(self):
+    def get_range_upgrade_number(self) -> int:
         return self._turn_updates.available_range_upgrade
 
-    def get_damage_upgrade_number(self):
+    def get_damage_upgrade_number(self) -> int:
         return self._turn_updates.available_damage_upgrade
 
     # returns the spell given in that turn
-    def get_received_spell(self):
+    def get_received_spell(self) -> Spell:
         spell_id = self._turn_updates.received_spell
         spell = self.get_spell_by_id(spell_id)
         return spell
 
     # returns the spell given in that turn to friend
-    def get_friend_received_spell(self):
+    def get_friend_received_spell(self) -> Spell:
         spell_id = self._turn_updates.friend_received_spell
         spell = self.get_spell_by_id(spell_id)
         return spell
 
-    def upgrade_unit_range(self, unit=None, unit_id=None):
+    def upgrade_unit_range(self, unit:Unit=None, unit_id:int=None):
         if unit is not None:
             unit_id = unit.unit_id
 
@@ -621,7 +622,7 @@ class World:
         else:
             Logs.show_log("invalid unit or unit_id in upgrade_unit_range")
 
-    def upgrade_unit_damage(self, unit=None, unit_id=None):
+    def upgrade_unit_damage(self, unit:Unit=None, unit_id:int=None):
         if unit is not None:
             unit_id = unit.unit_id
 
@@ -634,45 +635,44 @@ class World:
         else:
             Logs.show_log("invalid unit or unit_id in upgrade_unit_damage")
 
-    def get_all_base_units(self):
+    def get_all_base_units(self) -> List[BaseUnit]:
         return copy.deepcopy(self._base_units)
 
-    def get_all_spells(self):
+    def get_all_spells(self) -> List[Spell]:
         return copy.deepcopy(self._spells)
 
-    def get_king_by_id(self, player_id):
+    def get_king_by_id(self, player_id:int) -> King or None:
         for p in self._players:
             if p.player_id == player_id:
                 return p.king
-
         return None
 
-    def get_base_unit_by_id(self, type_id):
+    def get_base_unit_by_id(self, type_id:int) -> BaseUnit or None:
         for bu in self._base_units:
             if bu.type_id == type_id:
                 return bu
         return None
 
     # returns unit in map with a unit_id
-    def get_unit_by_id(self, unit_id):
+    def get_unit_by_id(self, unit_id:int) -> Unit or None:
         for unit in self._map.units:
             if unit.unit_id == unit_id:
                 return unit
         return None
 
-    def get_player_by_id(self, player_id):
+    def get_player_by_id(self, player_id:int) -> Player or None:
         for player in self._players:
             if player.player_id == player_id:
                 return player
         return None
 
-    def get_spell_by_id(self, type_id):
+    def get_spell_by_id(self, type_id:int) -> Spell or None:
         for spell in self._spells:
             if spell.type_id == type_id:
                 return spell
         return None
 
-    def get_game_constants(self):
+    def get_game_constants(self) -> GameConstants:
         return self._game_constants
 
     def _get_paths_starting_with(self, first, paths):
