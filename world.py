@@ -258,10 +258,7 @@ class World:
                 player.died_units.append(unit)
         for unit in self._map.units:
             if unit.target == -1 or unit.target_if_king is not None:
-                if unit.target_if_king == -1:
-                    unit.target_if_king = None
-                else:
-                    unit.target = None
+                unit.target = None
             else:
                 unit.target = self.get_unit_by_id(unit.target)
 
@@ -303,7 +300,6 @@ class World:
         self._handle_turn_units(msg=msg["diedUnits"], is_dead_unit=True)
         self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
-
         self._turn_updates = TurnUpdates(received_spell=msg["receivedSpell"],
                                          friend_received_spell=msg["friendReceivedSpell"],
                                          got_range_upgrade=msg["gotRangeUpgrade"],
