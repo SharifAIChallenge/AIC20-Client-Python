@@ -227,7 +227,6 @@ class World:
                 target = None
             else:
                 target = unit_msg["target"]
-
             unit = Unit(unit_id=unit_id, base_unit=base_unit,
                         cell=self._map.get_cell(unit_msg["cell"]["row"], unit_msg["cell"]["col"]),
                         path=self._map.get_path_by_id(unit_msg["pathId"]),
@@ -245,6 +244,10 @@ class World:
                         target_if_king=None if self.get_player_by_id(
                             unit_msg["target"]) is None else self.get_player_by_id(unit_msg["target"]).king,
                         player_id=unit_msg["playerId"])
+
+            if unit.path is not None and unit.path.cells[0] != self.get_player_by_id(unit.player_id).king.center:
+                unit.path = Path(path=unit.path)
+                unit.path.cells.reverse()
 
             if not is_dead_unit:
                 self._map._add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
@@ -579,10 +582,10 @@ class World:
             if unit in self._player.units:
                 return True
         elif spell_target == SpellTarget.ALLIED:
-            if unit in self._player_friend or unit in self._player.units:
+            if unit in self._player_friend.units or unit in self._player.units:
                 return True
         elif spell_target == SpellTarget.ENEMY:
-            if unit in self._player_first_enemy or unit in self._player_second_enemy:
+            if unit in self._player_first_enemy.units or unit in self._player_second_enemy.units:
                 return True
         return False
 
