@@ -3,6 +3,7 @@ import random
 from model import *
 from world import World
 
+# new version!
 
 class AI:
     def __init__(self):
