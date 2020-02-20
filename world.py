@@ -201,7 +201,7 @@ class World:
 
     def _handle_turn_units(self, msg, is_dead_unit=False):
         if not is_dead_unit:
-            self._map.clear_units()
+            self._map._clear_units()
             for player in self._players:
                 player.units.clear()
                 player.played_units.clear()
@@ -247,7 +247,7 @@ class World:
                         player_id=unit_msg["playerId"])
 
             if not is_dead_unit:
-                self._map.add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
+                self._map._add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
                 player.units.append(unit)
                 if unit_msg["wasDamageUpgraded"]:
                     player.damage_upgraded_unit = unit
