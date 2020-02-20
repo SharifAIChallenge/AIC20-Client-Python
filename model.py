@@ -25,16 +25,16 @@ class Map:
     def get_cell(self, row: int, col: int) -> "Cell":
         return self.cells[row][col]
 
-    def _clear_units(self):
+    def _clear_units(self) -> None:
         self.units.clear()
         for row in self.cells:
             for cell in row:
                 cell._clear_units()
 
-    def get_path_by_id(self, path_id: int):
+    def get_path_by_id(self, path_id: int) -> Optional["Path"]:
         return None if path_id not in self._paths_dict else self._paths_dict[path_id]
 
-    def _add_unit_in_cell(self, row: int, col: int, unit: "Unit"):
+    def _add_unit_in_cell(self, row: int, col: int, unit: "Unit") -> None:
         self.units.append(unit)
         self.cells[row][col]._add_unit(unit)
 
@@ -84,24 +84,24 @@ class Player:
         self.range_upgraded_unit = range_upgraded_unit  # unit that last turn the player upgraded range of it
         self.damage_upgraded_unit = damage_upgraded_unit  # unit that last turn the player upgraded damage of it
 
-    def is_alive(self):
+    def is_alive(self) -> bool:
         return self.king.is_alive
 
-    def get_hp(self):
+    def get_hp(self) -> int:
         return self.king.hp
 
-    def set_spells(self, spells: List["Spell"]):
+    def set_spells(self, spells: List["Spell"]) -> None:
         self._spells_dict.clear()
         self.spells = spells
         for spell in spells:
             self._spells_dict.update({spell.type_id: self._spells_dict.get(spell.type_id, 0) + 1})
 
-    def get_spell_count(self, spell: "Spell" = None, spell_id: int = None):
+    def get_spell_count(self, spell: "Spell" = None, spell_id: int = None) -> int:
         if spell is not None:
             spell_id = spell.type_id
         return self._spells_dict.get(spell_id, 0)
 
-    def get_spells(self):
+    def get_spells(self) -> List["Spell"]:
         return self.spells
 
     def __str__(self):
@@ -222,10 +222,10 @@ class Spell:
         self.power = power
         self.is_damaging = is_damaging
 
-    def is_unit_spell(self):
+    def is_unit_spell(self) -> bool:
         return self.type == SpellType.TELE
 
-    def is_area_spell(self):
+    def is_area_spell(self) -> bool:
         return not self.is_unit_spell()
 
     def __eq__(self, other):
@@ -256,10 +256,10 @@ class Cell:
     def __str__(self):
         return "<Cell | ({}, {})>".format(self.row, self.col)
 
-    def _clear_units(self):
+    def _clear_units(self) -> None:
         self.units.clear()
 
-    def _add_unit(self, unit: "Unit"):
+    def _add_unit(self, unit: "Unit") -> None:
         self.units.append(unit)
 
 
