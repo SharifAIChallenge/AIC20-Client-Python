@@ -149,6 +149,8 @@ class Unit:
         self.is_hasted = is_hasted
         self.affected_spells = affected_spells
 
+    def __str__(self):
+        return "<unit : " + self.base_unit.__str__() + ">"
 
 class SpellTarget(Enum):
     SELF = 1
