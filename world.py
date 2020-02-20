@@ -213,6 +213,8 @@ class World:
             for player in self._players:
                 player.died_units.clear()
 
+        unit_input_list = []
+
         for unit_msg in msg:
             unit_id = unit_msg["unitId"]
             player = self.get_player_by_id(player_id=unit_msg["playerId"])
@@ -223,10 +225,6 @@ class World:
             else:
                 target_cell = None
 
-            if unit_msg["target"] == -1:
-                target = None
-            else:
-                target = unit_msg["target"]
             unit = Unit(unit_id=unit_id, base_unit=base_unit,
                         cell=self._map.get_cell(unit_msg["cell"]["row"], unit_msg["cell"]["col"]),
                         path=self._map.get_path_by_id(unit_msg["pathId"]),
@@ -237,13 +235,15 @@ class World:
                         is_hasted=unit_msg["isHasted"],
                         range=unit_msg["range"],
                         attack=unit_msg["attack"],
-                        target=target,
+                        target=None, # will be set later when all units are in set
                         target_cell=target_cell,
                         affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in
                                          unit_msg["affectedSpells"]],
                         target_if_king=None if self.get_player_by_id(
                             unit_msg["target"]) is None else self.get_player_by_id(unit_msg["target"]).king,
                         player_id=unit_msg["playerId"])
+
+            unit_input_list.append(unit)
 
             if unit.path is not None and unit.path.cells[0] != self.get_player_by_id(unit.player_id).king.center:
                 unit.path = Path(path=unit.path)
@@ -264,11 +264,13 @@ class World:
                     player.duplicate_units.append(unit)
             else:
                 player.died_units.append(unit)
-        for unit in self._map.units:
+
+        for i in range(len(unit_input_list)):
+            unit = unit_input_list[i]
             if unit.target_if_king is not None:
                 unit.target = None
             else:
-                unit.target = self.get_unit_by_id(unit.target)
+                unit.target = self.get_unit_by_id(msg[i]["target"])
 
     def _handle_turn_cast_spells(self, msg):
         self._cast_spells = []
