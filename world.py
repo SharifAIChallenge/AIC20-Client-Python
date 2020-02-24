@@ -575,8 +575,8 @@ class World:
         if center is None:
             center = Cell(row, col)
         ls = []
-        for i in range(max(0, center.row - spell.range), min(center.row + spell.range, self._map.row_num)):
-            for j in range(max(0, center.col - spell.range), min(center.col + spell.range, self._map.col_num)):
+        for i in range(max(0, center.row - spell.range), min(center.row + spell.range + 1, self._map.row_num)):
+            for j in range(max(0, center.col - spell.range), min(center.col + spell.range + 1, self._map.col_num)):
                 cell = self._map.get_cell(i, j)
                 for u in cell.units:
                     if self._is_unit_targeted(u, spell.target):
