@@ -245,9 +245,13 @@ class World:
 
             unit_input_list.append(unit)
 
-            if unit.path is not None and unit.path.cells[0] != self.get_player_by_id(unit.player_id).king.center:
-                unit.path = Path(path=unit.path)
-                unit.path.cells.reverse()
+            if unit.path is not None:
+                if self.get_player_by_id(unit.player_id).king.center in unit.path.cells and unit.path.cells[0] != self.get_player_by_id(unit.player_id).king.center:
+                    unit.path = Path(path=unit.path)
+                    unit.path.cells.reverse()
+                if self._get_friend_by_id(unit.player_id).king.center in unit.path.cells and unit.path.cells[0] != self._get_friend_by_id(unit.player_id).king.center:
+                    unit.path = Path(path=unit.path)
+                    unit.path.cells.reverse()
 
             if not is_dead_unit:
                 self._map._add_unit_in_cell(unit.cell.row, unit.cell.col, unit)
@@ -556,7 +560,7 @@ class World:
             Logs.show_log("invalid cell selected in cast_area_spell")
 
     # returns a list of units the spell casts effects on
-    def get_area_spell_targets(self, center: Cell, row: int = None, col: int = None, spell: Spell = None,
+    def get_area_spell_targets(self, center: Cell = None, row: int = None, col: int = None, spell: Spell = None,
                                type_id: int = None):
         if spell is None:
             if type_id is not None:
