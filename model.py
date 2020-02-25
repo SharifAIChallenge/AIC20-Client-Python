@@ -152,6 +152,7 @@ class Unit:
     def __str__(self):
         return "<unit : " + self.base_unit.__str__() + ">"
 
+
 class SpellTarget(Enum):
     SELF = 1
     ALLIED = 2

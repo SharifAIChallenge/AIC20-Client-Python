@@ -196,8 +196,10 @@ class World:
         for king_msg in msg:
             self.get_player_by_id(king_msg["playerId"]).king.is_alive = king_msg["isAlive"]
             self.get_player_by_id(king_msg["playerId"]).king.hp = king_msg["hp"]
-            self.get_player_by_id(king_msg["playerId"]).king.target = king_msg["target"] if king_msg[
-                                                                                                "target"] != -1 else None
+            if king_msg["target"] != -1:
+                self.get_player_by_id(king_msg["playerId"]).king.target = self.get_unit_by_id(king_msg["target"])
+            else:
+                self.get_player_by_id(king_msg["playerId"]).king.target = None
 
     def _handle_turn_units(self, msg, is_dead_unit=False):
         if not is_dead_unit:
@@ -224,7 +226,6 @@ class World:
                 target_cell = Cell(row=unit_msg["targetCell"]["row"], col=unit_msg["targetCell"]["col"])
             else:
                 target_cell = None
-
             unit = Unit(unit_id=unit_id, base_unit=base_unit,
                         cell=self._map.get_cell(unit_msg["cell"]["row"], unit_msg["cell"]["col"]),
                         path=self._map.get_path_by_id(unit_msg["pathId"]),
@@ -235,21 +236,22 @@ class World:
                         is_hasted=unit_msg["isHasted"],
                         range=unit_msg["range"],
                         attack=unit_msg["attack"],
-                        target=None, # will be set later when all units are in set
+                        target=None,  # will be set later when all units are in set
                         target_cell=target_cell,
                         affected_spells=[self.get_cast_spell_by_id(cast_spell_id) for cast_spell_id in
                                          unit_msg["affectedSpells"]],
                         target_if_king=None if self.get_player_by_id(
                             unit_msg["target"]) is None else self.get_player_by_id(unit_msg["target"]).king,
                         player_id=unit_msg["playerId"])
-
             unit_input_list.append(unit)
 
             if unit.path is not None:
-                if self.get_player_by_id(unit.player_id).king.center in unit.path.cells and unit.path.cells[0] != self.get_player_by_id(unit.player_id).king.center:
+                if self.get_player_by_id(unit.player_id).king.center in unit.path.cells and unit.path.cells[
+                    0] != self.get_player_by_id(unit.player_id).king.center:
                     unit.path = Path(path=unit.path)
                     unit.path.cells.reverse()
-                if self._get_friend_by_id(unit.player_id).king.center in unit.path.cells and unit.path.cells[0] != self._get_friend_by_id(unit.player_id).king.center:
+                if self._get_friend_by_id(unit.player_id).king.center in unit.path.cells and unit.path.cells[
+                    0] != self._get_friend_by_id(unit.player_id).king.center:
                     unit.path = Path(path=unit.path)
                     unit.path.cells.reverse()
 
@@ -310,10 +312,10 @@ class World:
         self._current_turn = msg['currTurn']
         self._player.deck = [self._get_base_unit_by_id(deck_type_id) for deck_type_id in msg["deck"]]
         self._player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
-        self._handle_turn_kings(msg["kings"])
         self._handle_turn_units(msg=msg["diedUnits"], is_dead_unit=True)
-        self._handle_turn_units(msg["units"])
         self._handle_turn_cast_spells(msg["castSpells"])
+        self._handle_turn_units(msg["units"])
+        self._handle_turn_kings(msg["kings"])
         self._turn_updates = TurnUpdates(received_spell=msg["receivedSpell"],
                                          friend_received_spell=msg["friendReceivedSpell"],
                                          got_range_upgrade=msg["gotRangeUpgrade"],
