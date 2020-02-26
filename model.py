@@ -126,12 +126,12 @@ class Unit:
     attack: int
     is_duplicate: bool
     is_hasted: bool
-    affected_spells: List["Spell"]
+    affected_spells: List["CastSpell"]
 
     def __init__(self, base_unit: "BaseUnit", cell: "Cell", unit_id: int, hp: int, path: "Path",
                  target: Optional["Unit"], target_cell: "Cell", target_if_king: Optional["King"], player_id: int,
                  damage_level: int, range_level: int, range: int,
-                 attack: int, is_duplicate: bool, is_hasted: bool, affected_spells: List["Spell"]):
+                 attack: int, is_duplicate: bool, is_hasted: bool, affected_spells: List["CastSpell"]):
         self.base_unit = base_unit
         self.cell = cell
         self.unit_id = unit_id
