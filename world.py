@@ -3,7 +3,7 @@ import time
 from typing import *
 
 from model import BaseUnit, Map, King, Cell, Path, Player, GameConstants, TurnUpdates, \
-    CastAreaSpell, CastUnitSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget, Logs
+    CastAreaSpell, CastUnitSpell, CastSpell, Unit, Spell, Message, UnitTarget, SpellType, SpellTarget, Logs
 
 
 class World:
@@ -301,7 +301,7 @@ class World:
                                   path=self._map.get_path_by_id(cast_spell_msg["pathId"]),
                                   affected_units=affected_units))
 
-    def get_cast_spell_by_id(self, id: int):
+    def get_cast_spell_by_id(self, id: int) -> Optional["CastSpell"]:
         for cast_spell in self._cast_spells:
             if cast_spell.id == id:
                 return cast_spell
@@ -327,7 +327,7 @@ class World:
         self._player_friend.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["friendSpells"]])
         self._player.ap = msg["remainingAP"]
 
-    def choose_hand_by_id(self, type_ids: List[int]):
+    def choose_hand_by_id(self, type_ids: List[int]) -> None:
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if type_ids is not None:
             for type_id in type_ids:
@@ -341,7 +341,7 @@ class World:
             Logs.show_log("choose_hand_by_id function called with None type_eds")
 
     # in the first turn 'deck picking' give unit_ids or list of unit names to pick in that turn
-    def choose_hand(self, base_units: List[BaseUnit]):
+    def choose_hand(self, base_units: List[BaseUnit]) -> None:
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
         if base_units is not None:
             for base_unit in base_units:
@@ -415,7 +415,7 @@ class World:
     # this path is in the available path list
     # path may cross from friend
     def get_shortest_path_to_cell(self, from_player_id: int = None, from_player: Player = None, cell: Cell = None,
-                                  row: int = None, col: int = None):
+                                  row: int = None, col: int = None) -> Optional["Path"]:
         if from_player is not None:
             from_player_id = from_player.player_id
         elif from_player_id is None:
@@ -434,7 +434,7 @@ class World:
         return shortest_path_from_player[cell.row][cell.col]
 
     # place unit with type_id in path_id
-    def put_unit(self, type_id: int = None, path_id: int = None, base_unit: BaseUnit = None, path: Path = None):
+    def put_unit(self, type_id: int = None, path_id: int = None, base_unit: BaseUnit = None, path: Path = None) -> None:
         fail = False
         if type_id is not None and type(type_id) is not int:
             Logs.show_log("put_unit function called with invalid type_id argument!")
@@ -483,7 +483,7 @@ class World:
     def cast_unit_spell(self, unit: Unit = None, unit_id: int = None, path: Path = None, path_id: int = None,
                         cell: Cell = None, row: int = None, col: int = None,
                         spell: Spell = None,
-                        spell_id: int = None):
+                        spell_id: int = None) -> None:
         if spell is None and spell_id is None:
             Logs.show_log("cast_unit_spell function called with no spell input!")
             return None
@@ -532,7 +532,7 @@ class World:
 
     # cast spell in the cell 'center'
     def cast_area_spell(self, center: Cell = None, row: int = None, col: int = None, spell: Spell = None,
-                        spell_id: int = None):
+                        spell_id: int = None) -> None:
         if spell is None:
             if spell_id is None or type(spell_id) is not int:
                 Logs.show_log("no valid spell selected in cast_area_spell!")
@@ -563,7 +563,7 @@ class World:
 
     # returns a list of units the spell casts effects on
     def get_area_spell_targets(self, center: Cell = None, row: int = None, col: int = None, spell: Spell = None,
-                               type_id: int = None):
+                               type_id: int = None) -> List["Unit"]:
         if spell is None:
             if type_id is not None:
                 spell = self.get_cast_spell_by_id(type_id)
@@ -619,18 +619,18 @@ class World:
         return self._turn_updates.available_damage_upgrade
 
     # returns the spell given in that turn
-    def get_received_spell(self) -> Spell:
+    def get_received_spell(self) -> Optional["Spell"]:
         spell_id = self._turn_updates.received_spell
         spell = self.get_spell_by_id(spell_id)
         return spell
 
     # returns the spell given in that turn to friend
-    def get_friend_received_spell(self) -> Spell:
+    def get_friend_received_spell(self) -> Optional["Spell"]:
         spell_id = self._turn_updates.friend_received_spell
         spell = self.get_spell_by_id(spell_id)
         return spell
 
-    def upgrade_unit_range(self, unit: Unit = None, unit_id: int = None):
+    def upgrade_unit_range(self, unit: Unit = None, unit_id: int = None) -> None:
         if unit is not None:
             unit_id = unit.unit_id
 
@@ -643,7 +643,7 @@ class World:
         else:
             Logs.show_log("invalid unit or unit_id in upgrade_unit_range")
 
-    def upgrade_unit_damage(self, unit: Unit = None, unit_id: int = None):
+    def upgrade_unit_damage(self, unit: Unit = None, unit_id: int = None) -> None:
         if unit is not None:
             unit_id = unit.unit_id
 
@@ -662,32 +662,32 @@ class World:
     def get_all_spells(self) -> List[Spell]:
         return copy.deepcopy(self._spells)
 
-    def get_king_by_id(self, player_id: int) -> King or None:
+    def get_king_by_id(self, player_id: int) -> Optional["King"]:
         for p in self._players:
             if p.player_id == player_id:
                 return p.king
         return None
 
-    def get_base_unit_by_id(self, type_id: int) -> BaseUnit or None:
+    def get_base_unit_by_id(self, type_id: int) -> Optional["BaseUnit"]:
         for bu in self._base_units:
             if bu.type_id == type_id:
                 return bu
         return None
 
     # returns unit in map with a unit_id
-    def get_unit_by_id(self, unit_id: int) -> Unit or None:
+    def get_unit_by_id(self, unit_id: int) -> Optional["Unit"]:
         for unit in self._map.units:
             if unit.unit_id == unit_id:
                 return unit
         return None
 
-    def get_player_by_id(self, player_id: int) -> Player or None:
+    def get_player_by_id(self, player_id: int) -> Optional["Player"]:
         for player in self._players:
             if player.player_id == player_id:
                 return player
         return None
 
-    def get_spell_by_id(self, type_id: int) -> Spell or None:
+    def get_spell_by_id(self, type_id: int) -> Optional["Spell"]:
         for spell in self._spells:
             if spell.type_id == type_id:
                 return spell
