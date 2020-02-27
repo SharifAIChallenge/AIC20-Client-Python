@@ -181,7 +181,7 @@ class World:
                               range=spell["range"],
                               power=spell["power"],
                               target=SpellTarget.get_value(spell["target"]),
-                              is_damaging=False)
+                              is_damaging=spell["power"] < 0)
                         for spell in msg]
 
     def _handle_init_message(self, msg):
@@ -198,8 +198,10 @@ class World:
             self.get_player_by_id(king_msg["playerId"]).king.hp = king_msg["hp"]
             if king_msg["target"] != -1:
                 self.get_player_by_id(king_msg["playerId"]).king.target = self.get_unit_by_id(king_msg["target"])
+                self.get_player_by_id(king_msg["playerId"]).king.target_cell = self.get_unit_by_id(king_msg["target"]).cell
             else:
                 self.get_player_by_id(king_msg["playerId"]).king.target = None
+                self.get_player_by_id(king_msg["playerId"]).king.target_cell = None
 
     def _handle_turn_units(self, msg, is_dead_unit=False):
         if not is_dead_unit:
