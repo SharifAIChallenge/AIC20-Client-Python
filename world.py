@@ -13,6 +13,7 @@ class World:
 
     def __init__(self, world=None, queue=None):
         self._start_time = 0
+        self._init_message = None
         self._game_constants = None
 
         self._turn_updates = None
@@ -30,6 +31,7 @@ class World:
         self._cast_spells = []
 
         if world is not None:
+            self._init_message = world._init_message
             self._game_constants = world._game_constants
 
             self._turn_updates = TurnUpdates(turn_updates=world._turn_updates)
@@ -185,6 +187,7 @@ class World:
                         for spell in msg]
 
     def _handle_init_message(self, msg):
+        self._init_message = msg
         self._start_time = self._get_current_time_millis()
         self._game_constant_init(msg['gameConstants'])
         self._map_init(msg["map"])
@@ -311,6 +314,7 @@ class World:
 
     def _handle_turn_message(self, msg):
         self._start_time = self._get_current_time_millis()
+        self._handle_init_message(self._init_message)
         self._current_turn = msg['currTurn']
         self._player.deck = [self._get_base_unit_by_id(deck_type_id) for deck_type_id in msg["deck"]]
         self._player.hand = [self._get_base_unit_by_id(hand_type_id) for hand_type_id in msg["hand"]]
