@@ -292,19 +292,24 @@ class World:
                               affected_unit_id in
                               cast_spell_msg["affectedUnits"]]
             if spell.is_area_spell():
-                self._cast_spells.append(
-                    CastAreaSpell(spell=spell, id=cast_spell_msg["id"],
+                cast_area_spell = CastAreaSpell(spell=spell, id=cast_spell_msg["id"],
                                   caster_id=cast_spell_msg["casterId"], cell=cell,
                                   remaining_turns=cast_spell_msg["remainingTurns"],
-                                  affected_units=affected_units))
+                                  affected_units=affected_units)
+                self._cast_spells.append(cast_area_spell)
+                if cast_spell_msg["wasCastThisTurn"]:
+                    self.get_player_by_id(cast_spell_msg["casterId"]).cast_area_spell = cast_area_spell
+
             elif spell.is_unit_spell():
-                self._cast_spells.append(
-                    CastUnitSpell(spell=spell, id=cast_spell_msg["id"],
+                cast_unit_spell = CastUnitSpell(spell=spell, id=cast_spell_msg["id"],
                                   caster_id=cast_spell_msg["casterId"],
                                   cell=cell,
                                   unit=self.get_unit_by_id(cast_spell_msg["unitId"]),
                                   path=self._map.get_path_by_id(cast_spell_msg["pathId"]),
-                                  affected_units=affected_units))
+                                  affected_units=affected_units)
+                self._cast_spells.append(cast_unit_spell)
+                if cast_spell_msg["wasCastThisTurn"]:
+                    self.get_player_by_id(cast_spell_msg["casterId"]).cast_unit_spell = cast_unit_spell
 
     def get_cast_spell_by_id(self, id: int) -> Optional["CastSpell"]:
         for cast_spell in self._cast_spells:
@@ -332,6 +337,7 @@ class World:
         self._player.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["mySpells"]])
         self._player_friend.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["friendSpells"]])
         self._player.ap = msg["remainingAP"]
+
 
     def choose_hand_by_id(self, type_ids: List[int]) -> None:
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
