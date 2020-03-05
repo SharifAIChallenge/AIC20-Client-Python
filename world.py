@@ -201,7 +201,8 @@ class World:
             self.get_player_by_id(king_msg["playerId"]).king.hp = king_msg["hp"]
             if king_msg["target"] != -1:
                 self.get_player_by_id(king_msg["playerId"]).king.target = self.get_unit_by_id(king_msg["target"])
-                self.get_player_by_id(king_msg["playerId"]).king.target_cell = self.get_unit_by_id(king_msg["target"]).cell
+                self.get_player_by_id(king_msg["playerId"]).king.target_cell = self.get_unit_by_id(
+                    king_msg["target"]).cell
             else:
                 self.get_player_by_id(king_msg["playerId"]).king.target = None
                 self.get_player_by_id(king_msg["playerId"]).king.target_cell = None
@@ -293,20 +294,20 @@ class World:
                               cast_spell_msg["affectedUnits"]]
             if spell.is_area_spell():
                 cast_area_spell = CastAreaSpell(spell=spell, id=cast_spell_msg["id"],
-                                  caster_id=cast_spell_msg["casterId"], cell=cell,
-                                  remaining_turns=cast_spell_msg["remainingTurns"],
-                                  affected_units=affected_units)
+                                                caster_id=cast_spell_msg["casterId"], cell=cell,
+                                                remaining_turns=cast_spell_msg["remainingTurns"],
+                                                affected_units=affected_units)
                 self._cast_spells.append(cast_area_spell)
                 if cast_spell_msg["wasCastThisTurn"]:
                     self.get_player_by_id(cast_spell_msg["casterId"]).cast_area_spell = cast_area_spell
 
             elif spell.is_unit_spell():
                 cast_unit_spell = CastUnitSpell(spell=spell, id=cast_spell_msg["id"],
-                                  caster_id=cast_spell_msg["casterId"],
-                                  cell=cell,
-                                  unit=self.get_unit_by_id(cast_spell_msg["unitId"]),
-                                  path=self._map.get_path_by_id(cast_spell_msg["pathId"]),
-                                  affected_units=affected_units)
+                                                caster_id=cast_spell_msg["casterId"],
+                                                cell=cell,
+                                                unit=self.get_unit_by_id(cast_spell_msg["unitId"]),
+                                                path=self._map.get_path_by_id(cast_spell_msg["pathId"]),
+                                                affected_units=affected_units)
                 self._cast_spells.append(cast_unit_spell)
                 if cast_spell_msg["wasCastThisTurn"]:
                     self.get_player_by_id(cast_spell_msg["casterId"]).cast_unit_spell = cast_unit_spell
@@ -337,7 +338,6 @@ class World:
         self._player.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["mySpells"]])
         self._player_friend.set_spells([self.get_spell_by_id(spell_id) for spell_id in msg["friendSpells"]])
         self._player.ap = msg["remainingAP"]
-
 
     def choose_hand_by_id(self, type_ids: List[int]) -> None:
         message = Message(type="pick", turn=self.get_current_turn(), info=None)
@@ -400,7 +400,7 @@ class World:
                 Logs.show_log("get_paths_crossing cell function called with no valid argument")
                 return []
             cell = self._map.get_cell(row, col)
-
+        cell = self._map.get_cell(cell.row, cell.col)
         if not isinstance(cell, Cell):
             Logs.show_log("Given cell is invalid!")
             return []
@@ -418,6 +418,7 @@ class World:
                 Logs.show_log("get_paths_crossing cell function called with no valid argument")
                 return []
             cell = self._map.get_cell(row, col)
+        cell = self._map.get_cell(cell.row, cell.col)
         if not isinstance(cell, Cell):
             Logs.show_log("Given cell is invalid!")
             return []
@@ -440,6 +441,8 @@ class World:
             if row is None or col is None:
                 return None
             cell = self._map.get_cell(row, col)
+        else:
+            cell = self._map.get_cell(cell.row, cell.col)
         shortest_path_from_player = World._shortest_path.get(from_player_id, None)
         if shortest_path_from_player is None:
             return None
@@ -586,8 +589,11 @@ class World:
             return []
         if not spell.is_area_spell():
             return []
+        spell = self.get_cast_spell_by_id(spell.type_id)
         if center is None:
             center = Cell(row, col)
+        else:
+            center = self._map.get_cell(center.row, center.col)
         ls = []
         for i in range(max(0, center.row - spell.range), min(center.row + spell.range + 1, self._map.row_num)):
             for j in range(max(0, center.col - spell.range), min(center.col + spell.range + 1, self._map.col_num)):
