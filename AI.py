@@ -30,6 +30,7 @@ class AI:
     # it is called every turn for doing process during the game
     def turn(self, world: World):
         print("turn started:", world.get_current_turn())
+
         myself = world.get_me()
         max_ap = world.get_game_constants().max_ap
         # play all of hand once your ap reaches maximum. if ap runs out, putUnit doesn't do anything
