@@ -13,7 +13,6 @@ class AI:
     # this function is called in the beginning for deck picking and pre process
     def pick(self, world: World):
         print("pick started!")
-
         # pre process
         map = world.get_map()
         self.rows = map.row_num
