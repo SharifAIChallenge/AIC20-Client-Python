@@ -589,11 +589,8 @@ class World:
             return []
         if not spell.is_area_spell():
             return []
-        spell = self.get_cast_spell_by_id(spell.type_id)
         if center is None:
             center = Cell(row, col)
-        else:
-            center = self._map.get_cell(center.row, center.col)
         ls = []
         for i in range(max(0, center.row - spell.range), min(center.row + spell.range + 1, self._map.row_num)):
             for j in range(max(0, center.col - spell.range), min(center.col + spell.range + 1, self._map.col_num)):
